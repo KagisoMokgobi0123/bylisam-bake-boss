@@ -14,6 +14,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MuffinsRouteImport } from './routes/muffins'
 import { Route as AuthenticatedOrderRouteImport } from './routes/_authenticated/order'
+import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,18 +42,39 @@ const AuthenticatedOrderRoute = AuthenticatedOrderRouteImport.update({
   path: '/order',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
   '/order': typeof AuthenticatedOrderRoute
+  '/orders': typeof AuthenticatedOrdersRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/rewards': typeof AuthenticatedRewardsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
   '/order': typeof AuthenticatedOrderRoute
+  '/orders': typeof AuthenticatedOrdersRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/rewards': typeof AuthenticatedRewardsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +83,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
   '/_authenticated/order': typeof AuthenticatedOrderRoute
+  '/_authenticated/orders': typeof AuthenticatedOrdersRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/muffins' | '/order'
+  fullPaths:
+    '/' | '/auth' | '/muffins' | '/order' | '/orders' | '/profile' | '/rewards'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/muffins' | '/order'
+  to:
+    '/' | '/auth' | '/muffins' | '/order' | '/orders' | '/profile' | '/rewards'
   id:
     | '__root__'
     | '/'
@@ -72,6 +101,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/muffins'
     | '/_authenticated/order'
+    | '/_authenticated/orders'
+    | '/_authenticated/profile'
+    | '/_authenticated/rewards'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,15 +150,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrderRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/orders': {
+      id: '/_authenticated/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof AuthenticatedOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rewards': {
+      id: '/_authenticated/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof AuthenticatedRewardsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedOrderRoute: typeof AuthenticatedOrderRoute
+  AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOrderRoute: AuthenticatedOrderRoute,
+  AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
