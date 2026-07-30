@@ -10,11 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MuffinsRouteImport } from './routes/muffins'
+import { Route as AuthenticatedOrderRouteImport } from './routes/_authenticated/order'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MuffinsRoute = MuffinsRouteImport.update({
@@ -22,30 +34,50 @@ const MuffinsRoute = MuffinsRouteImport.update({
   path: '/muffins',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedOrderRoute = AuthenticatedOrderRouteImport.update({
+  id: '/order',
+  path: '/order',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
+  '/order': typeof AuthenticatedOrderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
+  '/order': typeof AuthenticatedOrderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
+  '/_authenticated/order': typeof AuthenticatedOrderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/muffins'
+  fullPaths: '/' | '/auth' | '/muffins' | '/order'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/muffins'
-  id: '__root__' | '/' | '/muffins'
+  to: '/' | '/auth' | '/muffins' | '/order'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/muffins'
+    | '/_authenticated/order'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   MuffinsRoute: typeof MuffinsRoute
 }
 
@@ -58,6 +90,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/muffins': {
       id: '/muffins'
       path: '/muffins'
@@ -65,11 +111,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MuffinsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/order': {
+      id: '/_authenticated/order'
+      path: '/order'
+      fullPath: '/order'
+      preLoaderRoute: typeof AuthenticatedOrderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedOrderRoute: typeof AuthenticatedOrderRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedOrderRoute: AuthenticatedOrderRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   MuffinsRoute: MuffinsRoute,
 }
 export const routeTree = rootRouteImport
