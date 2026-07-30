@@ -14,16 +14,366 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          business_name: string
+          id: boolean
+          receipt_footer: string
+          updated_at: string
+          whatsapp_number: string
+          whatsapp_template: string
+        }
+        Insert: {
+          business_name?: string
+          id?: boolean
+          receipt_footer?: string
+          updated_at?: string
+          whatsapp_number?: string
+          whatsapp_template?: string
+        }
+        Update: {
+          business_name?: string
+          id?: boolean
+          receipt_footer?: string
+          updated_at?: string
+          whatsapp_number?: string
+          whatsapp_template?: string
+        }
+        Relationships: []
+      }
+      email_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed: boolean
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed?: boolean
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed?: boolean
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      muffins: {
+        Row: {
+          created_at: string
+          description: string
+          earns_points: boolean
+          flavour: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price: number
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          earns_points?: boolean
+          flavour?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price?: number
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          earns_points?: boolean
+          flavour?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price?: number
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          muffin_id: string | null
+          muffin_name: string
+          order_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          muffin_id?: string | null
+          muffin_name: string
+          order_id: string
+          quantity?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          muffin_id?: string | null
+          muffin_name?: string
+          order_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_muffin_id_fkey"
+            columns: ["muffin_id"]
+            isOneToOne: false
+            referencedRelation: "muffins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          collected_at: string | null
+          created_at: string
+          customer_id: string | null
+          customer_name: string
+          discount: number
+          id: string
+          is_student: boolean
+          is_walk_in: boolean
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          phone: string | null
+          points_awarded: number
+          reference: string
+          reward_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          collected_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string
+          discount?: number
+          id?: string
+          is_student?: boolean
+          is_walk_in?: boolean
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          phone?: string | null
+          points_awarded?: number
+          reference?: string
+          reward_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          collected_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string
+          discount?: number
+          id?: string
+          is_student?: boolean
+          is_walk_in?: boolean
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          phone?: string | null
+          points_awarded?: number
+          reference?: string
+          reward_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          points: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id: string
+          phone?: string | null
+          points?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reward_settings: {
+        Row: {
+          expiry_days: number
+          id: boolean
+          is_active: boolean
+          min_redemption_points: number
+          points_per_muffin: number
+          points_per_purchase: number
+          reward_type: Database["public"]["Enums"]["reward_type"]
+          reward_value: number
+          updated_at: string
+        }
+        Insert: {
+          expiry_days?: number
+          id?: boolean
+          is_active?: boolean
+          min_redemption_points?: number
+          points_per_muffin?: number
+          points_per_purchase?: number
+          reward_type?: Database["public"]["Enums"]["reward_type"]
+          reward_value?: number
+          updated_at?: string
+        }
+        Update: {
+          expiry_days?: number
+          id?: boolean
+          is_active?: boolean
+          min_redemption_points?: number
+          points_per_muffin?: number
+          points_per_purchase?: number
+          reward_type?: Database["public"]["Enums"]["reward_type"]
+          reward_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rewards: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          points_spent: number
+          redeemed_at: string | null
+          reward_type: Database["public"]["Enums"]["reward_type"]
+          reward_value: number
+          status: Database["public"]["Enums"]["reward_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          points_spent?: number
+          redeemed_at?: string | null
+          reward_type: Database["public"]["Enums"]["reward_type"]
+          reward_value?: number
+          status?: Database["public"]["Enums"]["reward_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          points_spent?: number
+          redeemed_at?: string | null
+          reward_type?: Database["public"]["Enums"]["reward_type"]
+          reward_value?: number
+          status?: Database["public"]["Enums"]["reward_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "customer"
+      order_status: "pending" | "approved" | "ready" | "collected" | "cancelled"
+      payment_method: "cash" | "eft"
+      reward_status: "active" | "redeemed" | "expired"
+      reward_type: "free_muffin" | "percent_discount" | "fixed_discount"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +500,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "customer"],
+      order_status: ["pending", "approved", "ready", "collected", "cancelled"],
+      payment_method: ["cash", "eft"],
+      reward_status: ["active", "redeemed", "expired"],
+      reward_type: ["free_muffin", "percent_discount", "fixed_discount"],
+    },
   },
 } as const
