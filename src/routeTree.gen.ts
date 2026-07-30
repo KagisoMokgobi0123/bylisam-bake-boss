@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MuffinsRouteImport } from './routes/muffins'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOrderRouteImport } from './routes/_authenticated/order'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -36,6 +37,11 @@ const MuffinsRoute = MuffinsRouteImport.update({
   id: '/muffins',
   path: '/muffins',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOrderRoute = AuthenticatedOrderRouteImport.update({
   id: '/order',
@@ -62,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/order': typeof AuthenticatedOrderRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/order': typeof AuthenticatedOrderRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/muffins': typeof MuffinsRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/order': typeof AuthenticatedOrderRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -90,16 +99,31 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/muffins' | '/order' | '/orders' | '/profile' | '/rewards'
+    | '/'
+    | '/auth'
+    | '/muffins'
+    | '/admin'
+    | '/order'
+    | '/orders'
+    | '/profile'
+    | '/rewards'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/auth' | '/muffins' | '/order' | '/orders' | '/profile' | '/rewards'
+    | '/'
+    | '/auth'
+    | '/muffins'
+    | '/admin'
+    | '/order'
+    | '/orders'
+    | '/profile'
+    | '/rewards'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/muffins'
+    | '/_authenticated/admin'
     | '/_authenticated/order'
     | '/_authenticated/orders'
     | '/_authenticated/profile'
@@ -143,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MuffinsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/order': {
       id: '/_authenticated/order'
       path: '/order'
@@ -175,6 +206,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedOrderRoute: typeof AuthenticatedOrderRoute
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -182,6 +214,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedOrderRoute: AuthenticatedOrderRoute,
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
