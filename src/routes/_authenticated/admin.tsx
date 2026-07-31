@@ -49,6 +49,7 @@ type OrderRow = {
   customer_id: string | null;
   customer_name: string;
   phone: string | null;
+  whatsapp_number: string | null;
   is_walk_in: boolean;
   is_student: boolean;
   payment_method: string;
