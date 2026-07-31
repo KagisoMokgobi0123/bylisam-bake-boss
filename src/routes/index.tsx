@@ -32,7 +32,13 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { data: muffins } = useMuffins();
+  const { data: reviews } = useApprovedReviews(6);
   const featured = (muffins ?? []).slice(0, 3);
+  const published = reviews ?? [];
+  const averageRating =
+    published.length > 0
+      ? published.reduce((sum, r) => sum + r.rating, 0) / published.length
+      : 0;
 
   return (
     <PageShell>
