@@ -332,7 +332,6 @@ function OrdersBoard() {
           contactNumber && order.status === "collected"
             ? buildWhatsAppLink(
                 contactNumber,
-
                 buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
                 settings?.whatsapp_template || DEFAULT_THANK_YOU,
               )
