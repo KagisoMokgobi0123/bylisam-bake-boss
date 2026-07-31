@@ -86,7 +86,9 @@ function AuthPage() {
       if (!userId) throw new Error("We couldn't start your registration. Please try again.");
       await sendOtp({ data: { userId } });
       setPendingUserId(userId);
-      toast.success("We've emailed you a 6-digit verification code.");
+      toast.success(
+        "Registration successful! Please check your email and enter the verification code to confirm your account before signing in.",
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed");
     } finally {
