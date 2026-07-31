@@ -85,13 +85,20 @@ function OrderPage() {
   const placeOrder = useMutation({
     mutationFn: async () => {
       if (lines.length === 0) throw new Error("Add at least one muffin to your order.");
+      const trimmedWhatsapp = whatsappValue.trim();
+      // Optional field: only validated when the customer actually typed something.
+      if (trimmedWhatsapp && !isValidWhatsAppNumber(trimmedWhatsapp)) {
+        throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
+      }
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
           customer_id: user!.id,
           is_walk_in: false,
           customer_name: profile?.full_name || user!.email || "Customer",
-          phone: profile?.phone ?? null,
+          phone: trimmedWhatsapp || profile?.phone || null,
+          whatsapp_number: trimmedWhatsapp || null,
+
           is_student: true,
           payment_method: payment,
           subtotal,
