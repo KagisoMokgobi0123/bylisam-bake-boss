@@ -148,17 +148,35 @@ function useAdminOrders() {
 function Overview() {
   const { data: orders } = useAdminOrders();
   const { data: muffins } = useMuffins(false);
+  const { data: costLines } = useProductionCosts();
+  const { data: production } = useProductionSettings();
 
   const collected = (orders ?? []).filter((o) => o.status === "collected");
   const revenue = collected.reduce((sum, o) => sum + Number(o.total), 0);
   const pending = (orders ?? []).filter((o) => o.status === "pending").length;
   const lowStock = (muffins ?? []).filter((m) => m.stock <= 3 && m.is_active);
 
+  // Cost side comes from the profit calculator: cost per cupcake × cupcakes sold.
+  const unitCost = costPerUnit(totalIngredientCost(costLines ?? []), production?.batch_yield ?? 0);
+  const unitsSold = collected.reduce(
+    (sum, o) => sum + o.order_items.reduce((n, i) => n + i.quantity, 0),
+    0,
+  );
+  const totalCost = unitCost * unitsSold;
+  const profit = revenue - totalCost;
+
   const stats = [
     { label: "Sales recorded", value: currency(revenue) },
     { label: "Completed orders", value: String(collected.length) },
     { label: "Waiting for approval", value: String(pending) },
     { label: "Muffin types", value: String((muffins ?? []).length) },
+  ];
+
+  const profitStats = [
+    { label: "Total revenue", value: currency(revenue) },
+    { label: "Total production cost", value: currency(totalCost) },
+    { label: "Total profit", value: currency(profit) },
+    { label: "Profit margin", value: percent(profitMargin(revenue, profit)) },
   ];
 
   return (
@@ -173,6 +191,27 @@ function Overview() {
           </Card>
         ))}
       </div>
+
+      <div>
+        <h2 className="font-display text-lg text-primary">Profit summary</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Based on {unitsSold} cupcake{unitsSold === 1 ? "" : "s"} collected at{" "}
+          {currency(unitCost)} cost each — update ingredients in the profit calculator.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {profitStats.map((stat) => (
+            <Card key={stat.label} className="rounded-2xl surface-cream">
+              <CardContent className="p-6">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {stat.label}
+                </p>
+                <p className="mt-2 font-display text-2xl text-primary">{stat.value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
 
       {lowStock.length > 0 ? (
         <Card className="rounded-2xl">
