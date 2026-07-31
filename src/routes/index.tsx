@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BadgeCheck, Gift, Wallet } from "lucide-react";
+import { ArrowRight, BadgeCheck, Gift, Quote, Wallet } from "lucide-react";
 
 import heroImage from "@/assets/hero-muffins.jpg";
 import { PageShell } from "@/components/site-shell";
+import { StarRating } from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { currency } from "@/lib/format";
+import { currency, formatDay } from "@/lib/format";
 import { useMuffins } from "@/lib/queries";
+import { useApprovedReviews } from "@/lib/reviews";
 
 export const Route = createFileRoute("/")({
   head: () => ({
