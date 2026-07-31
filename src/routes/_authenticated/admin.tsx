@@ -327,10 +327,12 @@ function OrdersBoard() {
 
       {(orders ?? []).map((order) => {
         const next = NEXT_STATUS[order.status];
+        const contactNumber = order.whatsapp_number || order.phone;
         const whatsappUrl =
-          order.phone && order.status === "collected"
+          contactNumber && order.status === "collected"
             ? buildWhatsAppLink(
-                order.phone,
+                contactNumber,
+
                 buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
                 settings?.whatsapp_template || DEFAULT_THANK_YOU,
               )
