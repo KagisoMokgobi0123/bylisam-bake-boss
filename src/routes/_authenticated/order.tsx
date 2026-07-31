@@ -265,6 +265,26 @@ function OrderPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="whatsapp">
+                  WhatsApp number (recommended — receive your receipt via WhatsApp)
+                </Label>
+                <Input
+                  id="whatsapp"
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={20}
+                  autoComplete="tel"
+                  placeholder="082 123 4567"
+                  value={whatsappValue}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Optional — you can place your order without it.
+                </p>
+              </div>
+
+
+              <div className="space-y-2">
                 <Label htmlFor="notes">Note for BYLISAM (optional)</Label>
                 <Textarea
                   id="notes"
