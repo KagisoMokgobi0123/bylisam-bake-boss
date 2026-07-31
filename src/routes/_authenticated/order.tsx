@@ -78,6 +78,7 @@ function OrderPage() {
     ? discountForReward(chosenReward, lines.map((l) => Number(l.muffin.price)))
     : 0;
   const total = Math.max(0, subtotal - discount);
+  const whatsappValue = whatsapp ?? profile?.whatsapp_number ?? profile?.phone ?? "";
 
   function setQty(id: string, qty: number, max: number) {
     setCart((prev) => ({ ...prev, [id]: Math.max(0, Math.min(qty, max)) }));
