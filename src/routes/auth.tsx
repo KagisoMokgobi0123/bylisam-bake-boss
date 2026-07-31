@@ -86,7 +86,9 @@ function AuthPage() {
       if (!userId) throw new Error("We couldn't start your registration. Please try again.");
       await sendOtp({ data: { userId } });
       setPendingUserId(userId);
-      toast.success("We've emailed you a 6-digit verification code.");
+      toast.success(
+        "Registration successful! Please check your email and enter the verification code to confirm your account before signing in.",
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed");
     } finally {
@@ -162,8 +164,14 @@ function AuthPage() {
                 <div className="flex justify-center">
                   <MailCheck className="h-8 w-8 text-primary" aria-hidden />
                 </div>
+                <p className="rounded-2xl surface-cream p-4 text-sm text-muted-foreground">
+                  <span className="font-semibold text-primary">Registration successful!</span>{" "}
+                  Please check your email and enter the verification code below to confirm your
+                  account before signing in.
+                </p>
                 <div className="space-y-2">
                   <Label htmlFor="code">Verification code</Label>
+
                   <Input
                     id="code"
                     inputMode="numeric"

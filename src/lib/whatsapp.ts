@@ -47,14 +47,49 @@ export function normalisePhone(phone: string) {
   return digits;
 }
 
+/** Optional WhatsApp numbers are only validated when the customer actually enters one. */
+export function isValidWhatsAppNumber(value: string) {
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 9 && digits.length <= 15;
+}
+
+/** Absolute link to the public feedback page, built from the running app's URL. */
+export function feedbackLink() {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  return `${origin}/feedback`;
+}
+
+export const FEEDBACK_INVITE =
+  "We'd love to hear your feedback! Please leave us a review here:";
+
+/** Appends the friendly feedback invitation + link to any customer WhatsApp message. */
+export function withFeedbackInvite(message: string, link = feedbackLink()) {
+  return `${message}\n\n${FEEDBACK_INVITE} ${link}`;
+}
+
 /** Builds a wa.me click-to-chat link with the receipt and thank-you message pre-filled. */
 export function buildWhatsAppLink(
   phone: string,
   receipt: string,
   thankYouMessage: string,
 ) {
-  const text = `${thankYouMessage}\n\n${receipt}`;
+  const text = withFeedbackInvite(`${thankYouMessage}\n\n${receipt}`);
   return `https://wa.me/${normalisePhone(phone)}?text=${encodeURIComponent(text)}`;
+}
+
+/** Click-to-chat link for a short status / collection update message. */
+export function buildWhatsAppMessageLink(phone: string, message: string) {
+  return `https://wa.me/${normalisePhone(phone)}?text=${encodeURIComponent(
+    withFeedbackInvite(message),
+  )}`;
+}
+
+export function statusUpdateMessage(
+  reference: string,
+  statusLabel: string,
+  businessName = "BYLISAM",
+) {
+  return `Hi from ${businessName}! 🧁 Your order ${reference} is now: ${statusLabel}.`;
 }
 
 export const DEFAULT_THANK_YOU =

@@ -21,6 +21,11 @@ import { useIsAdmin, useSession } from "@/lib/auth";
 import { currency, formatDate, NEXT_STATUS, STATUS_LABELS, type OrderStatus } from "@/lib/format";
 import { useAppSettings, useMuffins, useRewardSettings, type Muffin } from "@/lib/queries";
 import { buildReceiptText, buildWhatsAppLink, DEFAULT_THANK_YOU } from "@/lib/whatsapp";
+import { ProfitCalculator } from "@/components/admin/profit-calculator";
+import { ReviewsManager } from "@/components/admin/reviews-manager";
+import { WalkInPanel } from "@/components/admin/walk-in-panel";
+import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
+import { useProductionCosts, useProductionSettings } from "@/lib/production";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -44,6 +49,7 @@ type OrderRow = {
   customer_id: string | null;
   customer_name: string;
   phone: string | null;
+  whatsapp_number: string | null;
   is_walk_in: boolean;
   is_student: boolean;
   payment_method: string;
@@ -94,7 +100,10 @@ function AdminPage() {
           <TabsList className="flex w-full flex-wrap justify-start rounded-full">
             <TabsTrigger value="overview" className="rounded-full">Overview</TabsTrigger>
             <TabsTrigger value="orders" className="rounded-full">Orders</TabsTrigger>
+            <TabsTrigger value="walk-in" className="rounded-full">Walk-in</TabsTrigger>
             <TabsTrigger value="muffins" className="rounded-full">Muffins &amp; prices</TabsTrigger>
+            <TabsTrigger value="profit" className="rounded-full">Profit calculator</TabsTrigger>
+            <TabsTrigger value="reviews" className="rounded-full">Reviews</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -103,9 +112,19 @@ function AdminPage() {
           <TabsContent value="orders" className="mt-6">
             <OrdersBoard />
           </TabsContent>
+          <TabsContent value="walk-in" className="mt-6">
+            <WalkInPanel />
+          </TabsContent>
           <TabsContent value="muffins" className="mt-6">
             <MuffinManager />
           </TabsContent>
+          <TabsContent value="profit" className="mt-6">
+            <ProfitCalculator />
+          </TabsContent>
+          <TabsContent value="reviews" className="mt-6">
+            <ReviewsManager />
+          </TabsContent>
+
         </Tabs>
       </div>
     </PageShell>
@@ -129,17 +148,35 @@ function useAdminOrders() {
 function Overview() {
   const { data: orders } = useAdminOrders();
   const { data: muffins } = useMuffins(false);
+  const { data: costLines } = useProductionCosts();
+  const { data: production } = useProductionSettings();
 
   const collected = (orders ?? []).filter((o) => o.status === "collected");
   const revenue = collected.reduce((sum, o) => sum + Number(o.total), 0);
   const pending = (orders ?? []).filter((o) => o.status === "pending").length;
   const lowStock = (muffins ?? []).filter((m) => m.stock <= 3 && m.is_active);
 
+  // Cost side comes from the profit calculator: cost per cupcake × cupcakes sold.
+  const unitCost = costPerUnit(totalIngredientCost(costLines ?? []), production?.batch_yield ?? 0);
+  const unitsSold = collected.reduce(
+    (sum, o) => sum + o.order_items.reduce((n, i) => n + i.quantity, 0),
+    0,
+  );
+  const totalCost = unitCost * unitsSold;
+  const profit = revenue - totalCost;
+
   const stats = [
     { label: "Sales recorded", value: currency(revenue) },
     { label: "Completed orders", value: String(collected.length) },
     { label: "Waiting for approval", value: String(pending) },
     { label: "Muffin types", value: String((muffins ?? []).length) },
+  ];
+
+  const profitStats = [
+    { label: "Total revenue", value: currency(revenue) },
+    { label: "Total production cost", value: currency(totalCost) },
+    { label: "Total profit", value: currency(profit) },
+    { label: "Profit margin", value: percent(profitMargin(revenue, profit)) },
   ];
 
   return (
@@ -154,6 +191,27 @@ function Overview() {
           </Card>
         ))}
       </div>
+
+      <div>
+        <h2 className="font-display text-lg text-primary">Profit summary</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Based on {unitsSold} cupcake{unitsSold === 1 ? "" : "s"} collected at{" "}
+          {currency(unitCost)} cost each — update ingredients in the profit calculator.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {profitStats.map((stat) => (
+            <Card key={stat.label} className="rounded-2xl surface-cream">
+              <CardContent className="p-6">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {stat.label}
+                </p>
+                <p className="mt-2 font-display text-2xl text-primary">{stat.value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
 
       {lowStock.length > 0 ? (
         <Card className="rounded-2xl">
@@ -269,10 +327,11 @@ function OrdersBoard() {
 
       {(orders ?? []).map((order) => {
         const next = NEXT_STATUS[order.status];
+        const contactNumber = order.whatsapp_number || order.phone;
         const whatsappUrl =
-          order.phone && order.status === "collected"
+          contactNumber && order.status === "collected"
             ? buildWhatsAppLink(
-                order.phone,
+                contactNumber,
                 buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
                 settings?.whatsapp_template || DEFAULT_THANK_YOU,
               )

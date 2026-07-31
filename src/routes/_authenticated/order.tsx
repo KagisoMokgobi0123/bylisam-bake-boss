@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useSession } from "@/lib/auth";
 import { currency } from "@/lib/format";
 import { useMuffins } from "@/lib/queries";
+import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 import { rewardLabel, discountForReward, type RewardRow } from "@/lib/rewards";
 
 export const Route = createFileRoute("/_authenticated/order")({
@@ -40,6 +42,7 @@ function OrderPage() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [payment, setPayment] = useState<"cash" | "eft">("cash");
   const [notes, setNotes] = useState("");
+  const [whatsapp, setWhatsapp] = useState<string | null>(null);
   const [rewardId, setRewardId] = useState<string | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -76,6 +79,7 @@ function OrderPage() {
     ? discountForReward(chosenReward, lines.map((l) => Number(l.muffin.price)))
     : 0;
   const total = Math.max(0, subtotal - discount);
+  const whatsappValue = whatsapp ?? profile?.whatsapp_number ?? profile?.phone ?? "";
 
   function setQty(id: string, qty: number, max: number) {
     setCart((prev) => ({ ...prev, [id]: Math.max(0, Math.min(qty, max)) }));
@@ -84,13 +88,20 @@ function OrderPage() {
   const placeOrder = useMutation({
     mutationFn: async () => {
       if (lines.length === 0) throw new Error("Add at least one muffin to your order.");
+      const trimmedWhatsapp = whatsappValue.trim();
+      // Optional field: only validated when the customer actually typed something.
+      if (trimmedWhatsapp && !isValidWhatsAppNumber(trimmedWhatsapp)) {
+        throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
+      }
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
           customer_id: user!.id,
           is_walk_in: false,
           customer_name: profile?.full_name || user!.email || "Customer",
-          phone: profile?.phone ?? null,
+          phone: trimmedWhatsapp || profile?.phone || null,
+          whatsapp_number: trimmedWhatsapp || null,
+
           is_student: true,
           payment_method: payment,
           subtotal,
@@ -253,6 +264,26 @@ function OrderPage() {
                   We only record which method you chose — never any banking details.
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp">
+                  WhatsApp number (recommended — receive your receipt via WhatsApp)
+                </Label>
+                <Input
+                  id="whatsapp"
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={20}
+                  autoComplete="tel"
+                  placeholder="082 123 4567"
+                  value={whatsappValue}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Optional — you can place your order without it.
+                </p>
+              </div>
+
 
               <div className="space-y-2">
                 <Label htmlFor="notes">Note for BYLISAM (optional)</Label>
