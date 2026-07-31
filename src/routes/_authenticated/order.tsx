@@ -40,6 +40,7 @@ function OrderPage() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [payment, setPayment] = useState<"cash" | "eft">("cash");
   const [notes, setNotes] = useState("");
+  const [whatsapp, setWhatsapp] = useState<string | null>(null);
   const [rewardId, setRewardId] = useState<string | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
