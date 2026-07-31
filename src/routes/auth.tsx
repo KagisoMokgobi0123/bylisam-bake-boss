@@ -164,8 +164,14 @@ function AuthPage() {
                 <div className="flex justify-center">
                   <MailCheck className="h-8 w-8 text-primary" aria-hidden />
                 </div>
+                <p className="rounded-2xl surface-cream p-4 text-sm text-muted-foreground">
+                  <span className="font-semibold text-primary">Registration successful!</span>{" "}
+                  Please check your email and enter the verification code below to confirm your
+                  account before signing in.
+                </p>
                 <div className="space-y-2">
                   <Label htmlFor="code">Verification code</Label>
+
                   <Input
                     id="code"
                     inputMode="numeric"
