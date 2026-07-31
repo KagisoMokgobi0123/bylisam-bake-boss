@@ -135,6 +135,52 @@ function Home() {
           </div>
         </section>
       ) : null}
+
+      <section className="surface-cream border-y border-border py-14">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-2xl text-primary">Loved by students</h2>
+              {published.length > 0 ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <StarRating value={Math.round(averageRating)} />
+                  <span>
+                    {averageRating.toFixed(1)} out of 5 · {published.length} review
+                    {published.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+            <Button asChild variant="outline" className="rounded-full">
+              <Link to="/feedback">Leave your feedback</Link>
+            </Button>
+          </div>
+
+          {published.length === 0 ? (
+            <p className="mt-6 text-muted-foreground">
+              No reviews yet — order a muffin and be the first to tell us what you think.
+            </p>
+          ) : (
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {published.map((review) => (
+                <Card key={review.id} className="rounded-2xl border-border/70 bg-background shadow-soft">
+                  <CardContent className="p-6">
+                    <Quote className="h-6 w-6 text-primary/40" aria-hidden />
+                    <div className="mt-3">
+                      <StarRating value={review.rating} />
+                    </div>
+                    <p className="mt-3 text-sm text-foreground">{review.comment}</p>
+                    <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {review.customer_name} · {formatDay(review.created_at)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
     </PageShell>
   );
 }
