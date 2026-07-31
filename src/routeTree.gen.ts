@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as MuffinsRouteImport } from './routes/muffins'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOrderRouteImport } from './routes/_authenticated/order'
@@ -31,6 +32,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MuffinsRoute = MuffinsRouteImport.update({
@@ -67,6 +73,7 @@ const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/order': typeof AuthenticatedOrderRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/order': typeof AuthenticatedOrderRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/order': typeof AuthenticatedOrderRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/feedback'
     | '/muffins'
     | '/admin'
     | '/order'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/feedback'
     | '/muffins'
     | '/admin'
     | '/order'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/feedback'
     | '/muffins'
     | '/_authenticated/admin'
     | '/_authenticated/order'
@@ -134,6 +146,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  FeedbackRoute: typeof FeedbackRoute
   MuffinsRoute: typeof MuffinsRoute
 }
 
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/muffins': {
@@ -228,6 +248,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  FeedbackRoute: FeedbackRoute,
   MuffinsRoute: MuffinsRoute,
 }
 export const routeTree = rootRouteImport

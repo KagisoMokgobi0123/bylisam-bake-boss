@@ -11,6 +11,7 @@ import { useIsAdmin, useSession } from "@/lib/auth";
 const publicLinks = [
   { to: "/", label: "Home" },
   { to: "/muffins", label: "Our muffins" },
+  { to: "/feedback", label: "Feedback" },
 ] as const;
 
 const customerLinks = [
