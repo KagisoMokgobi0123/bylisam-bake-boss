@@ -100,7 +100,10 @@ function AdminPage() {
           <TabsList className="flex w-full flex-wrap justify-start rounded-full">
             <TabsTrigger value="overview" className="rounded-full">Overview</TabsTrigger>
             <TabsTrigger value="orders" className="rounded-full">Orders</TabsTrigger>
+            <TabsTrigger value="walk-in" className="rounded-full">Walk-in</TabsTrigger>
             <TabsTrigger value="muffins" className="rounded-full">Muffins &amp; prices</TabsTrigger>
+            <TabsTrigger value="profit" className="rounded-full">Profit calculator</TabsTrigger>
+            <TabsTrigger value="reviews" className="rounded-full">Reviews</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -109,9 +112,19 @@ function AdminPage() {
           <TabsContent value="orders" className="mt-6">
             <OrdersBoard />
           </TabsContent>
+          <TabsContent value="walk-in" className="mt-6">
+            <WalkInPanel />
+          </TabsContent>
           <TabsContent value="muffins" className="mt-6">
             <MuffinManager />
           </TabsContent>
+          <TabsContent value="profit" className="mt-6">
+            <ProfitCalculator />
+          </TabsContent>
+          <TabsContent value="reviews" className="mt-6">
+            <ReviewsManager />
+          </TabsContent>
+
         </Tabs>
       </div>
     </PageShell>
