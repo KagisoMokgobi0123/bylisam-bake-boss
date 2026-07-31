@@ -181,6 +181,7 @@ export type Database = {
           subtotal: number
           total: number
           updated_at: string
+          whatsapp_number: string | null
         }
         Insert: {
           collected_at?: string | null
@@ -201,6 +202,7 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Update: {
           collected_at?: string | null
@@ -221,6 +223,7 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Relationships: [
           {
@@ -232,6 +235,54 @@ export type Database = {
           },
         ]
       }
+      production_costs: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          quantity: number
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          quantity?: number
+          unit_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          quantity?: number
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      production_settings: {
+        Row: {
+          batch_yield: number
+          id: boolean
+          selling_price: number
+          updated_at: string
+        }
+        Insert: {
+          batch_yield?: number
+          id?: boolean
+          selling_price?: number
+          updated_at?: string
+        }
+        Update: {
+          batch_yield?: number
+          id?: boolean
+          selling_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -241,6 +292,7 @@ export type Database = {
           phone: string | null
           points: number
           updated_at: string
+          whatsapp_number: string | null
         }
         Insert: {
           created_at?: string
@@ -250,6 +302,7 @@ export type Database = {
           phone?: string | null
           points?: number
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Update: {
           created_at?: string
@@ -259,8 +312,56 @@ export type Database = {
           phone?: string | null
           points?: number
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string
+          created_at: string
+          customer_name: string
+          id: string
+          is_approved: boolean
+          order_id: string | null
+          order_reference: string | null
+          rating: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string
+          created_at?: string
+          customer_name?: string
+          id?: string
+          is_approved?: boolean
+          order_id?: string | null
+          order_reference?: string | null
+          rating?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          customer_name?: string
+          id?: string
+          is_approved?: boolean
+          order_id?: string | null
+          order_reference?: string | null
+          rating?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reward_settings: {
         Row: {
