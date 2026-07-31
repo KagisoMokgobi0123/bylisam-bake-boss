@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useSession } from "@/lib/auth";
 import { currency } from "@/lib/format";
 import { useMuffins } from "@/lib/queries";
+import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 import { rewardLabel, discountForReward, type RewardRow } from "@/lib/rewards";
 
 export const Route = createFileRoute("/_authenticated/order")({
