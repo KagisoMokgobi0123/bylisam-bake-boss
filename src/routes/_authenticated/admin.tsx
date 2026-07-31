@@ -21,6 +21,11 @@ import { useIsAdmin, useSession } from "@/lib/auth";
 import { currency, formatDate, NEXT_STATUS, STATUS_LABELS, type OrderStatus } from "@/lib/format";
 import { useAppSettings, useMuffins, useRewardSettings, type Muffin } from "@/lib/queries";
 import { buildReceiptText, buildWhatsAppLink, DEFAULT_THANK_YOU } from "@/lib/whatsapp";
+import { ProfitCalculator } from "@/components/admin/profit-calculator";
+import { ReviewsManager } from "@/components/admin/reviews-manager";
+import { WalkInPanel } from "@/components/admin/walk-in-panel";
+import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
+import { useProductionCosts, useProductionSettings } from "@/lib/production";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
