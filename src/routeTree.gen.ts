@@ -14,11 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as MuffinsRouteImport } from './routes/muffins'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedOrderRouteImport } from './routes/_authenticated/order'
-import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -44,29 +41,14 @@ const MuffinsRoute = MuffinsRouteImport.update({
   path: '/muffins',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedOrderRoute = AuthenticatedOrderRouteImport.update({
-  id: '/order',
-  path: '/order',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
-  id: '/rewards',
-  path: '/rewards',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -75,22 +57,16 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/order': typeof AuthenticatedOrderRoute
-  '/orders': typeof AuthenticatedOrdersRoute
-  '/profile': typeof AuthenticatedProfileRoute
-  '/rewards': typeof AuthenticatedRewardsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/order': typeof AuthenticatedOrderRoute
-  '/orders': typeof AuthenticatedOrdersRoute
-  '/profile': typeof AuthenticatedProfileRoute
-  '/rewards': typeof AuthenticatedRewardsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -99,35 +75,15 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/order': typeof AuthenticatedOrderRoute
-  '/_authenticated/orders': typeof AuthenticatedOrdersRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/auth'
-    | '/feedback'
-    | '/muffins'
-    | '/admin'
-    | '/order'
-    | '/orders'
-    | '/profile'
-    | '/rewards'
+    '/' | '/auth' | '/feedback' | '/muffins' | '/reset-password' | '/admin'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/feedback'
-    | '/muffins'
-    | '/admin'
-    | '/order'
-    | '/orders'
-    | '/profile'
-    | '/rewards'
+  to: '/' | '/auth' | '/feedback' | '/muffins' | '/reset-password' | '/admin'
   id:
     | '__root__'
     | '/'
@@ -135,11 +91,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/feedback'
     | '/muffins'
+    | '/reset-password'
     | '/_authenticated/admin'
-    | '/_authenticated/order'
-    | '/_authenticated/orders'
-    | '/_authenticated/profile'
-    | '/_authenticated/rewards'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -148,6 +101,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   FeedbackRoute: typeof FeedbackRoute
   MuffinsRoute: typeof MuffinsRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -187,6 +141,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MuffinsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -194,51 +155,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/order': {
-      id: '/_authenticated/order'
-      path: '/order'
-      fullPath: '/order'
-      preLoaderRoute: typeof AuthenticatedOrderRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/orders': {
-      id: '/_authenticated/orders'
-      path: '/orders'
-      fullPath: '/orders'
-      preLoaderRoute: typeof AuthenticatedOrdersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/rewards': {
-      id: '/_authenticated/rewards'
-      path: '/rewards'
-      fullPath: '/rewards'
-      preLoaderRoute: typeof AuthenticatedRewardsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedOrderRoute: typeof AuthenticatedOrderRoute
-  AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedOrderRoute: AuthenticatedOrderRoute,
-  AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
-  AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -250,6 +175,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   FeedbackRoute: FeedbackRoute,
   MuffinsRoute: MuffinsRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

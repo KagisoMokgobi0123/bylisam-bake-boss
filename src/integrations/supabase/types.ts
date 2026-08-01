@@ -16,25 +16,37 @@ export type Database = {
     Tables: {
       app_settings: {
         Row: {
+          business_address: string
+          business_email: string
           business_name: string
+          business_phone: string
           id: boolean
           receipt_footer: string
+          tax_rate: number
           updated_at: string
           whatsapp_number: string
           whatsapp_template: string
         }
         Insert: {
+          business_address?: string
+          business_email?: string
           business_name?: string
+          business_phone?: string
           id?: boolean
           receipt_footer?: string
+          tax_rate?: number
           updated_at?: string
           whatsapp_number?: string
           whatsapp_template?: string
         }
         Update: {
+          business_address?: string
+          business_email?: string
           business_name?: string
+          business_phone?: string
           id?: boolean
           receipt_footer?: string
+          tax_rate?: number
           updated_at?: string
           whatsapp_number?: string
           whatsapp_template?: string
@@ -71,6 +83,24 @@ export type Database = {
           expires_at?: string
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      feedback_rate_limits: {
+        Row: {
+          client_key: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          client_key: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          client_key?: string
+          created_at?: string
+          id?: string
         }
         Relationships: []
       }
@@ -163,6 +193,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          amount_paid: number | null
+          cashier_name: string | null
           collected_at: string | null
           created_at: string
           customer_id: string | null
@@ -184,6 +216,8 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          amount_paid?: number | null
+          cashier_name?: string | null
           collected_at?: string | null
           created_at?: string
           customer_id?: string | null
@@ -205,6 +239,8 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          amount_paid?: number | null
+          cashier_name?: string | null
           collected_at?: string | null
           created_at?: string
           customer_id?: string | null

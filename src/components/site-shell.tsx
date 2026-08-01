@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Cookie, LogOut, Menu, ShoppingBag, Sparkles } from "lucide-react";
+import { Cookie, LayoutDashboard, LogOut, Menu, ShoppingBag, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,17 @@ const publicLinks = [
   { to: "/feedback", label: "Feedback" },
 ] as const;
 
-const customerLinks = [
-  { to: "/order", label: "Place order" },
-  { to: "/orders", label: "My orders" },
-  { to: "/rewards", label: "Rewards" },
-  { to: "/profile", label: "Profile" },
+const adminTabs = [
+  { tab: "overview", label: "Overview" },
+  { tab: "orders", label: "Orders" },
+  { tab: "walk-in", label: "New order" },
+  { tab: "muffins", label: "Muffins" },
+  { tab: "profit", label: "Profit" },
+  { tab: "reviews", label: "Reviews" },
 ] as const;
+
+const navClass =
+  "rounded-full px-3 py-2 text-sm font-medium text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground data-[status=active]:bg-primary-foreground/15 data-[status=active]:text-primary-foreground";
 
 export function SiteHeader() {
   const { user } = useSession();
@@ -35,8 +40,6 @@ export function SiteHeader() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const links = [...publicLinks, ...(user ? customerLinks : [])];
-
   return (
     <header className="sticky top-0 z-40 border-b border-primary/15 bg-primary text-primary-foreground shadow-soft">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
@@ -45,62 +48,56 @@ export function SiteHeader() {
           BYLISAM
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {links.map((link) => (
+        <nav className="hidden items-center gap-1 lg:flex">
+          {publicLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
               activeOptions={{ exact: link.to === "/" }}
-              className="rounded-full px-3 py-2 text-sm font-medium text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground data-[status=active]:bg-primary-foreground/15 data-[status=active]:text-primary-foreground"
+              className={navClass}
             >
               {link.label}
             </Link>
           ))}
-          {isAdmin ? (
-            <Link
-              to="/admin"
-              className="rounded-full px-3 py-2 text-sm font-medium text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground data-[status=active]:bg-primary-foreground/15"
-            >
-              Admin
-            </Link>
-          ) : null}
+          {isAdmin
+            ? adminTabs.map((item) => (
+                <Link
+                  key={item.tab}
+                  to="/admin"
+                  search={{ tab: item.tab }}
+                  className={navClass}
+                >
+                  {item.label}
+                </Link>
+              ))
+            : null}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           {user ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="rounded-full"
-              onClick={signOut}
-            >
+            <Button variant="secondary" size="sm" className="rounded-full" onClick={signOut}>
               <LogOut className="mr-1.5 h-4 w-4" /> Sign out
             </Button>
           ) : (
-            <>
-              <Button asChild variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
-                <Link to="/auth">Sign in</Link>
-              </Button>
-              <Button asChild size="sm" variant="secondary" className="rounded-full">
-                <Link to="/auth" search={{ mode: "register" }}>
-                  Join BYLISAM
-                </Link>
-              </Button>
-            </>
+            <Button asChild size="sm" variant="secondary" className="rounded-full">
+              <Link to="/auth">
+                <LayoutDashboard className="mr-1.5 h-4 w-4" /> Staff sign in
+              </Link>
+            </Button>
           )}
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="md:hidden">
+          <SheetTrigger asChild className="lg:hidden">
             <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-72 bg-card">
+          <SheetContent side="right" className="w-72 overflow-y-auto bg-card">
             <SheetTitle className="font-display text-lg text-primary">BYLISAM</SheetTitle>
             <nav className="mt-6 flex flex-col gap-1">
-              {links.map((link) => (
+              {publicLinks.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
@@ -110,15 +107,26 @@ export function SiteHeader() {
                   {link.label}
                 </Link>
               ))}
+
               {isAdmin ? (
-                <Link
-                  to="/admin"
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-                >
-                  Admin dashboard
-                </Link>
+                <>
+                  <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Admin
+                  </p>
+                  {adminTabs.map((item) => (
+                    <Link
+                      key={item.tab}
+                      to="/admin"
+                      search={{ tab: item.tab }}
+                      onClick={() => setOpen(false)}
+                      className="rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </>
               ) : null}
+
               <div className="mt-4">
                 {user ? (
                   <Button className="w-full rounded-full" onClick={signOut}>
@@ -127,7 +135,7 @@ export function SiteHeader() {
                 ) : (
                   <Button asChild className="w-full rounded-full">
                     <Link to="/auth" onClick={() => setOpen(false)}>
-                      Sign in / Register
+                      Staff sign in
                     </Link>
                   </Button>
                 )}

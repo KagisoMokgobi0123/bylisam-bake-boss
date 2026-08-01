@@ -11,7 +11,10 @@ export type ReceiptOrder = {
   total: number;
   created_at: string;
   collected_at?: string | null;
+  amount_paid?: number | null;
+  cashier_name?: string | null;
 };
+
 
 export type ReceiptItem = {
   muffin_name: string;

@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Loader2, MessageSquareHeart } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import { PageShell } from "@/components/site-shell";
 import { StarRating } from "@/components/star-rating";
@@ -12,9 +12,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { useProfile, useSession } from "@/lib/auth";
 import { formatDay } from "@/lib/format";
+import { submitFeedback } from "@/lib/feedback.functions";
 import { useApprovedReviews } from "@/lib/reviews";
 
 export const Route = createFileRoute("/feedback")({
@@ -24,7 +23,7 @@ export const Route = createFileRoute("/feedback")({
       {
         name: "description",
         content:
-          "Tell us how your BYLISAM muffins were. Rate your order out of five stars, leave a review and read what other students say.",
+          "Tell us how your BYLISAM muffins were. Rate your order out of five stars, leave a review and read what other students say. No account needed.",
       },
       { property: "og:title", content: "Leave Feedback — BYLISAM Muffins" },
       {
@@ -38,47 +37,29 @@ export const Route = createFileRoute("/feedback")({
   component: FeedbackPage,
 });
 
-const feedbackSchema = z.object({
-  customerName: z.string().trim().min(2, "Please tell us your name").max(80),
-  orderReference: z.string().trim().max(40).optional(),
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().trim().min(3, "Please write a short review").max(1000),
-});
-
 function FeedbackPage() {
-  const { user, loading } = useSession();
-  const { data: profile } = useProfile(user?.id);
   const { data: reviews } = useApprovedReviews();
   const queryClient = useQueryClient();
+  const send = useServerFn(submitFeedback);
 
   const [name, setName] = useState("");
   const [reference, setReference] = useState("");
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot
   const [submitted, setSubmitted] = useState(false);
 
-  const displayName = name || profile?.full_name || "";
-
   const submit = useMutation({
-    mutationFn: async () => {
-      const parsed = feedbackSchema.safeParse({
-        customerName: displayName,
-        orderReference: reference,
-        rating,
-        comment,
-      });
-      if (!parsed.success) throw new Error(parsed.error.issues[0].message);
-
-      const { error } = await supabase.from("reviews").insert({
-        user_id: user!.id,
-        customer_name: parsed.data.customerName,
-        order_reference: parsed.data.orderReference || null,
-        rating: parsed.data.rating,
-        comment: parsed.data.comment,
-        is_approved: false,
-      });
-      if (error) throw error;
-    },
+    mutationFn: async () =>
+      send({
+        data: {
+          customerName: name.trim(),
+          orderReference: reference.trim() || null,
+          rating,
+          comment: comment.trim(),
+          website,
+        },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       setSubmitted(true);
@@ -101,8 +82,8 @@ function FeedbackPage() {
             How were your muffins?
           </h1>
           <p className="mt-3 text-muted-foreground">
-            Received your order? Rate it and tell us what you thought — every review helps us bake
-            better and helps other students choose their next treat.
+            No account needed — just rate your order and tell us what you thought. Every review
+            helps us bake better and helps other students choose their next treat.
           </p>
         </div>
 
@@ -113,83 +94,81 @@ function FeedbackPage() {
                 <MessageSquareHeart className="h-5 w-5" aria-hidden /> Leave a review
               </h2>
 
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              ) : !user ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Sign in with your BYLISAM account to leave a review — this keeps our reviews
-                    genuine.
-                  </p>
-                  <Button asChild className="w-full rounded-full">
-                    <Link to="/auth">Sign in to review</Link>
-                  </Button>
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  submit.mutate();
+                }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="fb-name">Your name</Label>
+                  <Input
+                    id="fb-name"
+                    maxLength={80}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
                 </div>
-              ) : (
-                <form
-                  className="space-y-4"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    submit.mutate();
-                  }}
-                >
-                  <div className="space-y-2">
-                    <Label htmlFor="fb-name">Your name</Label>
-                    <Input
-                      id="fb-name"
-                      maxLength={80}
-                      value={displayName}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="fb-ref">Order number (optional)</Label>
-                    <Input
-                      id="fb-ref"
-                      maxLength={40}
-                      placeholder="BYL-XXXXXX"
-                      value={reference}
-                      onChange={(e) => setReference(e.target.value)}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fb-ref">Order number (optional)</Label>
+                  <Input
+                    id="fb-ref"
+                    maxLength={40}
+                    placeholder="BYL-XXXXXX"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label>Your rating</Label>
-                    <StarRating value={rating} onChange={setRating} size="lg" label="Your rating" />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Your rating</Label>
+                  <StarRating value={rating} onChange={setRating} size="lg" label="Your rating" />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="fb-comment">Your review</Label>
-                    <Textarea
-                      id="fb-comment"
-                      rows={4}
-                      maxLength={1000}
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder="The chocolate muffin was still warm — perfect!"
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fb-comment">Your review</Label>
+                  <Textarea
+                    id="fb-comment"
+                    rows={4}
+                    maxLength={1000}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="The chocolate muffin was still warm — perfect!"
+                    required
+                  />
+                </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full rounded-full"
-                    disabled={submit.isPending}
-                  >
-                    {submit.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Submit feedback
-                  </Button>
+                {/* Honeypot: hidden from people, tempting for bots. */}
+                <div className="hidden" aria-hidden>
+                  <Label htmlFor="fb-website">Website</Label>
+                  <Input
+                    id="fb-website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </div>
 
-                  {submitted ? (
-                    <p className="rounded-2xl surface-cream p-3 text-sm text-muted-foreground">
-                      Thanks! Your review is waiting for approval and will be published on our
-                      homepage shortly.
-                    </p>
-                  ) : null}
-                </form>
-              )}
+                <Button type="submit" className="w-full rounded-full" disabled={submit.isPending}>
+                  {submit.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Submit feedback
+                </Button>
+
+                <p className="text-xs text-muted-foreground">
+                  To keep reviews genuine we limit how many can be sent from one device each hour.
+                </p>
+
+                {submitted ? (
+                  <p className="rounded-2xl surface-cream p-3 text-sm text-muted-foreground">
+                    Thanks! Your review is waiting for approval and will be published on our
+                    homepage shortly.
+                  </p>
+                ) : null}
+              </form>
             </CardContent>
           </Card>
 
