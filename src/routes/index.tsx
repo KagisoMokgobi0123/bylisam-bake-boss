@@ -62,9 +62,7 @@ function Home() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full">
-              <Link to="/auth" search={{ mode: "register" }}>
-                Create an account
-              </Link>
+              <Link to="/feedback">Leave feedback</Link>
             </Button>
           </div>
         </div>
