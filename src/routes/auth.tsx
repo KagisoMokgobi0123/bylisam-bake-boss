@@ -3,11 +3,20 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Cookie, Loader2, MailCheck } from "lucide-react";
+
+import { PasswordInput } from "@/components/password-input";
 import { z } from "zod";
 
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,6 +69,8 @@ function AuthPage() {
   // login state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   const sendOtp = useServerFn(sendSignupOtp);
   const verifyOtp = useServerFn(verifySignupOtp);
@@ -108,7 +119,7 @@ function AuthPage() {
       });
       if (error) throw error;
       toast.success("Email verified — welcome to BYLISAM! 🧁");
-      navigate({ to: "/order" });
+      navigate({ to: "/admin", search: { tab: "overview" } });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Verification failed");
     } finally {
@@ -129,6 +140,27 @@ function AuthPage() {
     }
   }
 
+  async function handleForgotPassword(event: React.FormEvent) {
+    event.preventDefault();
+    const address = resetEmail.trim();
+    if (!address) return;
+    setPending(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(address, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetOpen(false);
+      toast.success(
+        "If that email is registered, a secure reset link is on its way. The link expires shortly.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send the reset email");
+    } finally {
+      setPending(false);
+    }
+  }
+
   async function handleLogin(event: React.FormEvent) {
     event.preventDefault();
     setPending(true);
@@ -136,7 +168,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
       toast.success("Welcome back!");
-      navigate({ to: "/order" });
+      navigate({ to: "/admin", search: { tab: "overview" } });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Sign in failed");
     } finally {
@@ -224,9 +256,8 @@ function AuthPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="login-password">Password</Label>
-                      <Input
+                      <PasswordInput
                         id="login-password"
-                        type="password"
                         autoComplete="current-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -236,6 +267,18 @@ function AuthPage() {
                     <Button type="submit" className="w-full rounded-full" disabled={pending}>
                       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                       Sign in
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="w-full text-sm text-muted-foreground"
+                      onClick={() => {
+                        setResetEmail(email);
+                        setResetOpen(true);
+                      }}
+                    >
+                      Forgot your password?
                     </Button>
                   </form>
                 </TabsContent>
@@ -265,9 +308,8 @@ function AuthPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="reg-password">Password</Label>
-                      <Input
+                      <PasswordInput
                         id="reg-password"
-                        type="password"
                         autoComplete="new-password"
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
@@ -288,6 +330,36 @@ function AuthPage() {
             )}
           </CardContent>
         </Card>
+
+        <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+          <DialogContent className="max-w-sm rounded-3xl">
+            <DialogHeader>
+              <DialogTitle className="font-display text-xl text-primary">
+                Reset your password
+              </DialogTitle>
+              <DialogDescription>
+                We'll email you a secure, single-use link that expires shortly.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email address</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  autoComplete="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full rounded-full" disabled={pending}>
+                {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Send reset link
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
           We only store your name, email, and (optionally) a phone number for collection
