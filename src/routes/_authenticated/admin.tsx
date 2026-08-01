@@ -236,21 +236,16 @@ function OrdersBoard() {
   const { data: orders, isLoading } = useAdminOrders();
   const { data: settings } = useAppSettings();
   const { data: rewardSettings } = useRewardSettings();
+  const { user } = useSession();
+  const { data: adminProfile } = useProfile(user?.id);
   const queryClient = useQueryClient();
   const [receiptId, setReceiptId] = useState<string | null>(null);
 
-  const advance = useMutation({
+  const cashierName = adminProfile?.full_name || user?.email || "BYLISAM staff";
+
+  /** One click: complete the order, award points, drop stock and message the customer. */
+  const complete = useMutation({
     mutationFn: async (order: OrderRow) => {
-      const next = NEXT_STATUS[order.status];
-      if (!next) return;
-
-      if (next !== "collected") {
-        const { error } = await supabase.from("orders").update({ status: next }).eq("id", order.id);
-        if (error) throw error;
-        return;
-      }
-
-      // Collected: record the sale, drop stock and award loyalty points.
       const muffinCount = order.order_items.reduce((sum, i) => sum + i.quantity, 0);
       const points =
         (rewardSettings?.is_active ?? true) && order.customer_id
@@ -264,6 +259,8 @@ function OrdersBoard() {
           status: "collected",
           collected_at: new Date().toISOString(),
           points_awarded: points,
+          cashier_name: cashierName,
+          amount_paid: Number(order.total),
         })
         .eq("id", order.id);
       if (error) throw error;
@@ -296,10 +293,27 @@ function OrdersBoard() {
             .eq("id", order.customer_id);
         }
       }
+
+      return order;
     },
-    onSuccess: () => {
+    onSuccess: (order) => {
       queryClient.invalidateQueries();
-      toast.success("Order updated.");
+      const contactNumber = order.whatsapp_number || order.phone;
+      if (contactNumber) {
+        // Automatically hand the completion message + receipt to WhatsApp.
+        window.open(
+          buildWhatsAppLink(
+            contactNumber,
+            buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
+            settings?.whatsapp_template || DEFAULT_THANK_YOU,
+          ),
+          "_blank",
+          "noopener",
+        );
+        toast.success("Order completed — WhatsApp message ready to send.");
+      } else {
+        toast.success("Order completed.");
+      }
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update"),
   });
@@ -326,7 +340,6 @@ function OrdersBoard() {
       ) : null}
 
       {(orders ?? []).map((order) => {
-        const next = NEXT_STATUS[order.status];
         const contactNumber = order.whatsapp_number || order.phone;
         const whatsappUrl =
           contactNumber && order.status === "collected"
@@ -375,14 +388,14 @@ function OrdersBoard() {
                 <p className="font-display text-lg text-primary">{currency(order.total)}</p>
                 <p className="text-sm uppercase text-muted-foreground">{order.payment_method}</p>
                 <div className="flex flex-wrap gap-2">
-                  {next ? (
+                  {order.status !== "collected" && order.status !== "cancelled" ? (
                     <Button
                       size="sm"
                       className="rounded-full"
-                      disabled={advance.isPending}
-                      onClick={() => advance.mutate(order)}
+                      disabled={complete.isPending}
+                      onClick={() => complete.mutate(order)}
                     >
-                      Mark {STATUS_LABELS[next].toLowerCase()}
+                      <CheckCircle2 className="mr-1.5 h-4 w-4" /> Order complete
                     </Button>
                   ) : null}
                   {order.status === "collected" ? (
@@ -398,7 +411,7 @@ function OrdersBoard() {
                   {whatsappUrl ? (
                     <Button asChild size="sm" variant="secondary" className="rounded-full">
                       <a href={whatsappUrl} target="_blank" rel="noreferrer">
-                        <MessageCircle className="mr-1.5 h-4 w-4" /> Send WhatsApp
+                        <MessageCircle className="mr-1.5 h-4 w-4" /> Resend WhatsApp
                       </a>
                     </Button>
                   ) : null}
@@ -425,11 +438,20 @@ function OrdersBoard() {
         order={receiptOrder as never}
         items={receiptOrder?.order_items ?? []}
         footer={settings?.receipt_footer}
-        businessName={settings?.business_name}
+        cashierName={receiptOrder?.cashier_name ?? cashierName}
+        business={{
+          name: settings?.business_name,
+          phone: settings?.business_phone || settings?.whatsapp_number,
+          email: settings?.business_email,
+          address: settings?.business_address,
+          taxRate: settings?.tax_rate,
+        }}
       />
     </div>
   );
 }
+
+
 
 const emptyMuffin = {
   name: "",
