@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { CheckCircle2, Loader2, MessageCircle, Pencil, Plus, Receipt, Trash2 } from "lucide-react";
@@ -27,7 +28,14 @@ import { WalkInPanel } from "@/components/admin/walk-in-panel";
 import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
 import { useProductionCosts, useProductionSettings } from "@/lib/production";
 
+const adminSearchSchema = z.object({
+  tab: z
+    .enum(["overview", "orders", "walk-in", "muffins", "profit", "reviews"])
+    .optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/admin")({
+  validateSearch: adminSearchSchema,
   head: () => ({
     meta: [
       { title: "Admin Dashboard — BYLISAM" },
@@ -67,6 +75,8 @@ type OrderRow = {
 
 function AdminPage() {
   const { user } = useSession();
+  const { tab } = Route.useSearch();
+  const navigate = useNavigate();
   const { data: isAdmin, isLoading: roleLoading } = useIsAdmin(user?.id);
 
   if (roleLoading) {
@@ -98,7 +108,17 @@ function AdminPage() {
         <h1 className="font-display text-3xl text-primary">Admin dashboard</h1>
         <p className="mt-2 text-muted-foreground">Everything you need to run BYLISAM day to day.</p>
 
-        <Tabs defaultValue="overview" className="mt-8">
+        <Tabs
+          value={tab ?? "overview"}
+          onValueChange={(value) =>
+            navigate({
+              to: "/admin",
+              search: { tab: value as NonNullable<typeof tab> },
+              replace: true,
+            })
+          }
+          className="mt-8"
+        >
           <TabsList className="flex w-full flex-wrap justify-start rounded-full">
             <TabsTrigger value="overview" className="rounded-full">Overview</TabsTrigger>
             <TabsTrigger value="orders" className="rounded-full">Orders</TabsTrigger>
