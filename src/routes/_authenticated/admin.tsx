@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Loader2, MessageCircle, Pencil, Plus, Receipt, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, MessageCircle, Pencil, Plus, Receipt, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageShell } from "@/components/site-shell";
@@ -17,8 +17,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsAdmin, useSession } from "@/lib/auth";
-import { currency, formatDate, NEXT_STATUS, STATUS_LABELS, type OrderStatus } from "@/lib/format";
+import { useIsAdmin, useProfile, useSession } from "@/lib/auth";
+import { currency, formatDate, type OrderStatus } from "@/lib/format";
 import { useAppSettings, useMuffins, useRewardSettings, type Muffin } from "@/lib/queries";
 import { buildReceiptText, buildWhatsAppLink, DEFAULT_THANK_YOU } from "@/lib/whatsapp";
 import { ProfitCalculator } from "@/components/admin/profit-calculator";
@@ -60,6 +60,8 @@ type OrderRow = {
   points_awarded: number;
   created_at: string;
   collected_at: string | null;
+  cashier_name: string | null;
+  amount_paid: number | null;
   order_items: { id: string; muffin_id: string | null; muffin_name: string; quantity: number; unit_price: number }[];
 };
 
