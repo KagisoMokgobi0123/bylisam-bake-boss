@@ -103,7 +103,7 @@ function MuffinsPage() {
               : "Create a free account to order, track collection and start earning loyalty points."}
           </p>
           <Button asChild size="lg" className="mt-5 rounded-full">
-            <Link to={user ? "/admin" : "/auth"} search={user ? { tab: "walk-in" as const } : undefined}>{user ? "Create an order" : "Staff sign in"}</Link>
+            <Link to={user ? "/order" : "/auth"}>{user ? "Order now" : "Create an account"}</Link>
           </Button>
         </div>
       </div>
