@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -76,7 +76,6 @@ type OrderRow = {
 function AdminPage() {
   const { user } = useSession();
   const { tab } = Route.useSearch();
-  const navigate = useNavigate();
   const { data: isAdmin, isLoading: roleLoading } = useIsAdmin(user?.id);
 
   if (roleLoading) {
