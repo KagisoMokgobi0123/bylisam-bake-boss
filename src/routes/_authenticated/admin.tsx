@@ -254,11 +254,25 @@ function OrdersBoard() {
   /** One click: complete the order, award points, drop stock and message the customer. */
   const complete = useMutation({
     mutationFn: async (order: OrderRow) => {
-      const muffinCount = order.order_items.reduce((sum, i) => sum + i.quantity, 0);
+      const muffinIds = order.order_items
+        .map((i) => i.muffin_id)
+        .filter((id): id is string => !!id);
+      const { data: muffinRows } = muffinIds.length
+        ? await supabase.from("muffins").select("id, points_value").in("id", muffinIds)
+        : { data: [] as { id: string; points_value: number }[] };
+      const pointsFor = (muffinId: string | null) =>
+        muffinId
+          ? ((muffinRows ?? []).find((m) => m.id === muffinId)?.points_value ??
+            (rewardSettings?.points_per_muffin ?? 0))
+          : (rewardSettings?.points_per_muffin ?? 0);
+
+      const earned = order.order_items.reduce(
+        (sum, i) => sum + i.quantity * pointsFor(i.muffin_id),
+        0,
+      );
       const points =
         (rewardSettings?.is_active ?? true) && order.customer_id
-          ? muffinCount * (rewardSettings?.points_per_muffin ?? 0) +
-            (rewardSettings?.points_per_purchase ?? 0)
+          ? earned + (rewardSettings?.points_per_purchase ?? 0)
           : 0;
 
       const { error } = await supabase
@@ -299,10 +313,17 @@ function OrdersBoard() {
             .from("profiles")
             .update({ points: profile.points + points })
             .eq("id", order.customer_id);
+          await supabase.from("reward_transactions").insert({
+            user_id: order.customer_id,
+            points,
+            reason: `Points earned on order ${order.reference}`,
+            order_id: order.id,
+            created_by: user?.id ?? null,
+          });
         }
       }
 
-      return order;
+      return { ...order, points_awarded: points };
     },
     onSuccess: (order) => {
       queryClient.invalidateQueries();
@@ -312,7 +333,7 @@ function OrdersBoard() {
         window.open(
           buildWhatsAppLink(
             contactNumber,
-            buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
+            buildReceiptText(order, order.order_items, receiptBusiness),
             settings?.whatsapp_template || DEFAULT_THANK_YOU,
           ),
           "_blank",
@@ -353,7 +374,7 @@ function OrdersBoard() {
           contactNumber && order.status === "collected"
             ? buildWhatsAppLink(
                 contactNumber,
-                buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
+                buildReceiptText(order, order.order_items, receiptBusiness),
                 settings?.whatsapp_template || DEFAULT_THANK_YOU,
               )
             : null;
