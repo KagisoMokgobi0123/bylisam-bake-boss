@@ -102,52 +102,37 @@ function AdminPage() {
     );
   }
 
+  const current = tab ?? "overview";
+  const titles: Record<NonNullable<typeof tab>, string> = {
+    overview: "Overview",
+    orders: "Orders",
+    "walk-in": "Walk-ins",
+    muffins: "Muffins & prices",
+    profit: "Profit calculator",
+    reviews: "Reviews",
+    users: "Users",
+  };
+
   return (
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="font-display text-3xl text-primary">Admin dashboard</h1>
-        <p className="mt-2 text-muted-foreground">Everything you need to run BYLISAM day to day.</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Admin dashboard
+        </p>
+        <h1 className="font-display text-3xl text-primary">{titles[current]}</h1>
+        <p className="mt-2 text-muted-foreground">
+          Everything you need to run BYLISAM day to day — switch sections from the top menu.
+        </p>
 
-        <Tabs
-          value={tab ?? "overview"}
-          onValueChange={(value) =>
-            navigate({
-              to: "/admin",
-              search: { tab: value as NonNullable<typeof tab> },
-              replace: true,
-            })
-          }
-          className="mt-8"
-        >
-          <TabsList className="flex w-full flex-wrap justify-start rounded-full">
-            <TabsTrigger value="overview" className="rounded-full">Overview</TabsTrigger>
-            <TabsTrigger value="orders" className="rounded-full">Orders</TabsTrigger>
-            <TabsTrigger value="walk-in" className="rounded-full">Walk-in</TabsTrigger>
-            <TabsTrigger value="muffins" className="rounded-full">Muffins &amp; prices</TabsTrigger>
-            <TabsTrigger value="profit" className="rounded-full">Profit calculator</TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-full">Reviews</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="mt-6">
-            <Overview />
-          </TabsContent>
-          <TabsContent value="orders" className="mt-6">
-            <OrdersBoard />
-          </TabsContent>
-          <TabsContent value="walk-in" className="mt-6">
-            <WalkInPanel />
-          </TabsContent>
-          <TabsContent value="muffins" className="mt-6">
-            <MuffinManager />
-          </TabsContent>
-          <TabsContent value="profit" className="mt-6">
-            <ProfitCalculator />
-          </TabsContent>
-          <TabsContent value="reviews" className="mt-6">
-            <ReviewsManager />
-          </TabsContent>
-
-        </Tabs>
+        <div className="mt-8">
+          {current === "overview" ? <Overview /> : null}
+          {current === "orders" ? <OrdersBoard /> : null}
+          {current === "walk-in" ? <WalkInPanel /> : null}
+          {current === "muffins" ? <MuffinManager /> : null}
+          {current === "profit" ? <ProfitCalculator /> : null}
+          {current === "reviews" ? <ReviewsManager /> : null}
+          {current === "users" ? <UsersManager /> : null}
+        </div>
       </div>
     </PageShell>
   );
