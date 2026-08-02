@@ -251,6 +251,15 @@ function OrdersBoard() {
 
   const cashierName = adminProfile?.full_name || user?.email || "BYLISAM staff";
 
+  const receiptBusiness = {
+    name: settings?.business_name ?? "BYLISAM",
+    address: settings?.business_address,
+    phone: settings?.business_phone || settings?.whatsapp_number,
+    email: settings?.business_email,
+    taxRate: settings?.tax_rate,
+    cashierName,
+  };
+
   /** One click: complete the order, award points, drop stock and message the customer. */
   const complete = useMutation({
     mutationFn: async (order: OrderRow) => {
