@@ -28,8 +28,11 @@ type Props = {
   cashierName?: string;
 };
 
-const Divider = () => (
-  <div aria-hidden className="border-t border-dashed border-muted-foreground/50" />
+const Divider = ({ double }: { double?: boolean }) => (
+  <div
+    aria-hidden
+    className={`border-t ${double ? "border-double border-t-[3px]" : "border-dashed"} border-muted-foreground/50`}
+  />
 );
 
 function Line({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
@@ -60,6 +63,7 @@ export function OrderReceipt({
   const tax = taxRate > 0 ? total - total / (1 + taxRate / 100) : 0;
   const paid = order.amount_paid != null ? Number(order.amount_paid) : total;
   const change = Math.max(0, paid - total);
+  const points = Number(order.points_awarded ?? 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,7 +74,7 @@ export function OrderReceipt({
 
         <div
           id="receipt-print-area"
-          className="space-y-2 rounded-2xl bg-card p-4 font-mono text-[13px] leading-relaxed text-foreground"
+          className="space-y-2 rounded-2xl bg-card p-4 font-mono text-[13px] leading-relaxed text-foreground print:w-[76mm] print:rounded-none print:p-0 print:text-[11px]"
         >
           <div className="text-center">
             <p className="font-display text-2xl font-bold uppercase tracking-widest text-primary">
@@ -81,36 +85,37 @@ export function OrderReceipt({
             {business?.email ? <p className="text-xs">{business.email}</p> : null}
           </div>
 
-          <Divider />
+          <Divider double />
 
           <div className="space-y-0.5 text-xs">
             <Line label="Receipt no." value={order.reference} />
             <Line label="Date" value={formatDate(order.collected_at ?? order.created_at)} />
-            <Line label="Cashier" value={cashierName || "BYLISAM staff"} />
+            <Line label="Cashier" value={cashierName || order.cashier_name || "BYLISAM staff"} />
             {order.customer_name ? <Line label="Customer" value={order.customer_name} /> : null}
             {order.phone ? <Line label="Contact" value={order.phone} /> : null}
           </div>
 
           <Divider />
 
-          <div className="flex justify-between text-[11px] uppercase tracking-wide text-muted-foreground">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-2 text-[11px] uppercase tracking-wide text-muted-foreground">
             <span>Item</span>
-            <span>Amount</span>
+            <span className="text-right">Qty</span>
+            <span className="text-right">Price</span>
+            <span className="text-right">Total</span>
           </div>
 
-          <ul className="space-y-1">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-2 gap-y-1">
             {items.map((item, index) => (
-              <li key={index}>
-                <div className="flex justify-between gap-3">
-                  <span>{item.muffin_name}</span>
-                  <span>{currency(Number(item.unit_price) * item.quantity)}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {item.quantity} × {currency(item.unit_price)}
-                </p>
-              </li>
+              <div key={index} className="contents">
+                <span className="truncate">{item.muffin_name}</span>
+                <span className="text-right">{item.quantity}</span>
+                <span className="text-right">{currency(item.unit_price)}</span>
+                <span className="text-right">
+                  {currency(Number(item.unit_price) * item.quantity)}
+                </span>
+              </div>
             ))}
-          </ul>
+          </div>
 
           <Divider />
 
@@ -132,11 +137,12 @@ export function OrderReceipt({
 
           <div className="space-y-0.5">
             <Line label="Payment method" value={String(order.payment_method).toUpperCase()} />
-            <Line label="Amount paid" value={currency(paid)} />
+            <Line label="Amount received" value={currency(paid)} />
             <Line label="Change" value={currency(change)} />
+            {points > 0 ? <Line label="Reward points earned" value={String(points)} /> : null}
           </div>
 
-          <Divider />
+          <Divider double />
 
           <div className="space-y-1 pt-1 text-center text-xs">
             <p className="font-bold uppercase tracking-widest">Thank you!</p>
@@ -145,7 +151,7 @@ export function OrderReceipt({
           </div>
         </div>
 
-        <Button variant="outline" className="rounded-full" onClick={() => window.print()}>
+        <Button variant="outline" className="rounded-full print:hidden" onClick={() => window.print()}>
           <Printer className="mr-2 h-4 w-4" /> Print / save
         </Button>
       </DialogContent>
