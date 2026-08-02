@@ -146,7 +146,13 @@ function OrdersPage() {
         order={receiptOrder as never}
         items={receiptOrder?.order_items ?? []}
         footer={settings?.receipt_footer}
-        businessName={settings?.business_name}
+        business={{
+          name: settings?.business_name,
+          phone: settings?.business_phone || settings?.whatsapp_number,
+          email: settings?.business_email,
+          address: settings?.business_address,
+          taxRate: settings?.tax_rate,
+        }}
       />
     </PageShell>
   );
