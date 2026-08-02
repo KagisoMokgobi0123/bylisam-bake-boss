@@ -11,6 +11,7 @@ export type Muffin = {
   is_active: boolean;
   image_url: string | null;
   earns_points: boolean;
+  points_value: number;
 };
 
 export function useMuffins(onlyAvailable = true) {

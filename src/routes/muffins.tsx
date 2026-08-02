@@ -4,6 +4,7 @@ import { PageShell } from "@/components/site-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { MuffinImage } from "@/components/muffin-image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { currency } from "@/lib/format";
 import { useMuffins } from "@/lib/queries";
@@ -52,6 +53,11 @@ function MuffinsPage() {
                   className="rounded-2xl transition-transform duration-300 hover:-translate-y-1"
                 >
                   <CardContent className="flex h-full flex-col p-6">
+                    <MuffinImage
+                      path={muffin.image_url}
+                      alt={muffin.name}
+                      className="mb-4 h-40 w-full"
+                    />
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -70,9 +76,14 @@ function MuffinsPage() {
                       )}
                     </div>
                     <p className="mt-3 flex-1 text-sm text-muted-foreground">{muffin.description}</p>
-                    <p className="mt-4 font-display text-xl text-primary">
-                      {currency(muffin.price)}
-                    </p>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <p className="font-display text-xl text-primary">{currency(muffin.price)}</p>
+                      {muffin.points_value > 0 ? (
+                        <span className="text-xs text-muted-foreground">
+                          Earns {muffin.points_value} pt{muffin.points_value === 1 ? "" : "s"}
+                        </span>
+                      ) : null}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -92,7 +103,7 @@ function MuffinsPage() {
               : "Create a free account to order, track collection and start earning loyalty points."}
           </p>
           <Button asChild size="lg" className="mt-5 rounded-full">
-            <Link to={user ? "/admin" : "/auth"} search={user ? { tab: "walk-in" as const } : undefined}>{user ? "Create an order" : "Staff sign in"}</Link>
+            <Link to={user ? "/order" : "/auth"}>{user ? "Order now" : "Create an account"}</Link>
           </Button>
         </div>
       </div>

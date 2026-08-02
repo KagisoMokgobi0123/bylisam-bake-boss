@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfile, useSession } from "@/lib/auth";
@@ -25,12 +24,15 @@ import { buildReceiptText, buildWhatsAppLink, DEFAULT_THANK_YOU } from "@/lib/wh
 import { ProfitCalculator } from "@/components/admin/profit-calculator";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
 import { WalkInPanel } from "@/components/admin/walk-in-panel";
+import { UsersManager } from "@/components/admin/users-manager";
+import { MuffinImage } from "@/components/muffin-image";
+import { uploadMuffinImage } from "@/lib/muffin-images";
 import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
 import { useProductionCosts, useProductionSettings } from "@/lib/production";
 
 const adminSearchSchema = z.object({
   tab: z
-    .enum(["overview", "orders", "walk-in", "muffins", "profit", "reviews"])
+    .enum(["overview", "orders", "walk-in", "muffins", "profit", "reviews", "users"])
     .optional(),
 });
 
@@ -76,7 +78,6 @@ type OrderRow = {
 function AdminPage() {
   const { user } = useSession();
   const { tab } = Route.useSearch();
-  const navigate = useNavigate();
   const { data: isAdmin, isLoading: roleLoading } = useIsAdmin(user?.id);
 
   if (roleLoading) {
@@ -102,52 +103,37 @@ function AdminPage() {
     );
   }
 
+  const current = tab ?? "overview";
+  const titles: Record<NonNullable<typeof tab>, string> = {
+    overview: "Overview",
+    orders: "Orders",
+    "walk-in": "Walk-ins",
+    muffins: "Muffins & prices",
+    profit: "Profit calculator",
+    reviews: "Reviews",
+    users: "Users",
+  };
+
   return (
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="font-display text-3xl text-primary">Admin dashboard</h1>
-        <p className="mt-2 text-muted-foreground">Everything you need to run BYLISAM day to day.</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Admin dashboard
+        </p>
+        <h1 className="font-display text-3xl text-primary">{titles[current]}</h1>
+        <p className="mt-2 text-muted-foreground">
+          Everything you need to run BYLISAM day to day — switch sections from the top menu.
+        </p>
 
-        <Tabs
-          value={tab ?? "overview"}
-          onValueChange={(value) =>
-            navigate({
-              to: "/admin",
-              search: { tab: value as NonNullable<typeof tab> },
-              replace: true,
-            })
-          }
-          className="mt-8"
-        >
-          <TabsList className="flex w-full flex-wrap justify-start rounded-full">
-            <TabsTrigger value="overview" className="rounded-full">Overview</TabsTrigger>
-            <TabsTrigger value="orders" className="rounded-full">Orders</TabsTrigger>
-            <TabsTrigger value="walk-in" className="rounded-full">Walk-in</TabsTrigger>
-            <TabsTrigger value="muffins" className="rounded-full">Muffins &amp; prices</TabsTrigger>
-            <TabsTrigger value="profit" className="rounded-full">Profit calculator</TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-full">Reviews</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="mt-6">
-            <Overview />
-          </TabsContent>
-          <TabsContent value="orders" className="mt-6">
-            <OrdersBoard />
-          </TabsContent>
-          <TabsContent value="walk-in" className="mt-6">
-            <WalkInPanel />
-          </TabsContent>
-          <TabsContent value="muffins" className="mt-6">
-            <MuffinManager />
-          </TabsContent>
-          <TabsContent value="profit" className="mt-6">
-            <ProfitCalculator />
-          </TabsContent>
-          <TabsContent value="reviews" className="mt-6">
-            <ReviewsManager />
-          </TabsContent>
-
-        </Tabs>
+        <div className="mt-8">
+          {current === "overview" ? <Overview /> : null}
+          {current === "orders" ? <OrdersBoard /> : null}
+          {current === "walk-in" ? <WalkInPanel /> : null}
+          {current === "muffins" ? <MuffinManager /> : null}
+          {current === "profit" ? <ProfitCalculator /> : null}
+          {current === "reviews" ? <ReviewsManager /> : null}
+          {current === "users" ? <UsersManager /> : null}
+        </div>
       </div>
     </PageShell>
   );
@@ -265,14 +251,37 @@ function OrdersBoard() {
 
   const cashierName = adminProfile?.full_name || user?.email || "BYLISAM staff";
 
+  const receiptBusiness = {
+    name: settings?.business_name ?? "BYLISAM",
+    address: settings?.business_address,
+    phone: settings?.business_phone || settings?.whatsapp_number,
+    email: settings?.business_email,
+    taxRate: settings?.tax_rate,
+    cashierName,
+  };
+
   /** One click: complete the order, award points, drop stock and message the customer. */
   const complete = useMutation({
     mutationFn: async (order: OrderRow) => {
-      const muffinCount = order.order_items.reduce((sum, i) => sum + i.quantity, 0);
+      const muffinIds = order.order_items
+        .map((i) => i.muffin_id)
+        .filter((id): id is string => !!id);
+      const { data: muffinRows } = muffinIds.length
+        ? await supabase.from("muffins").select("id, points_value").in("id", muffinIds)
+        : { data: [] as { id: string; points_value: number }[] };
+      const pointsFor = (muffinId: string | null) =>
+        muffinId
+          ? ((muffinRows ?? []).find((m) => m.id === muffinId)?.points_value ??
+            (rewardSettings?.points_per_muffin ?? 0))
+          : (rewardSettings?.points_per_muffin ?? 0);
+
+      const earned = order.order_items.reduce(
+        (sum, i) => sum + i.quantity * pointsFor(i.muffin_id),
+        0,
+      );
       const points =
         (rewardSettings?.is_active ?? true) && order.customer_id
-          ? muffinCount * (rewardSettings?.points_per_muffin ?? 0) +
-            (rewardSettings?.points_per_purchase ?? 0)
+          ? earned + (rewardSettings?.points_per_purchase ?? 0)
           : 0;
 
       const { error } = await supabase
@@ -313,10 +322,17 @@ function OrdersBoard() {
             .from("profiles")
             .update({ points: profile.points + points })
             .eq("id", order.customer_id);
+          await supabase.from("reward_transactions").insert({
+            user_id: order.customer_id,
+            points,
+            reason: `Points earned on order ${order.reference}`,
+            order_id: order.id,
+            created_by: user?.id ?? null,
+          });
         }
       }
 
-      return order;
+      return { ...order, points_awarded: points };
     },
     onSuccess: (order) => {
       queryClient.invalidateQueries();
@@ -326,7 +342,7 @@ function OrdersBoard() {
         window.open(
           buildWhatsAppLink(
             contactNumber,
-            buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
+            buildReceiptText(order, order.order_items, receiptBusiness),
             settings?.whatsapp_template || DEFAULT_THANK_YOU,
           ),
           "_blank",
@@ -367,7 +383,7 @@ function OrdersBoard() {
           contactNumber && order.status === "collected"
             ? buildWhatsAppLink(
                 contactNumber,
-                buildReceiptText(order, order.order_items, settings?.business_name ?? "BYLISAM"),
+                buildReceiptText(order, order.order_items, receiptBusiness),
                 settings?.whatsapp_template || DEFAULT_THANK_YOU,
               )
             : null;
@@ -481,6 +497,8 @@ const emptyMuffin = {
   description: "",
   price: "0",
   stock: "0",
+  points_value: "1",
+  image_url: "" as string,
   is_active: true,
 };
 
@@ -490,6 +508,20 @@ function MuffinManager() {
   const [editing, setEditing] = useState<Muffin | null>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...emptyMuffin });
+  const [uploading, setUploading] = useState(false);
+
+  async function handleUpload(file: File) {
+    try {
+      setUploading(true);
+      const path = await uploadMuffinImage(file);
+      setForm((prev) => ({ ...prev, image_url: path }));
+      toast.success("Photo uploaded.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not upload photo");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function openNew() {
     setEditing(null);
@@ -505,6 +537,8 @@ function MuffinManager() {
       description: muffin.description,
       price: String(muffin.price),
       stock: String(muffin.stock),
+      points_value: String(muffin.points_value ?? 1),
+      image_url: muffin.image_url ?? "",
       is_active: muffin.is_active,
     });
     setOpen(true);
@@ -519,6 +553,8 @@ function MuffinManager() {
         description: form.description.trim(),
         price: Number(form.price) || 0,
         stock: Math.max(0, Math.round(Number(form.stock) || 0)),
+        points_value: Math.max(0, Math.round(Number(form.points_value) || 0)),
+        image_url: form.image_url || null,
         is_active: form.is_active,
       };
       const { error } = editing
@@ -610,6 +646,35 @@ function MuffinManager() {
                   />
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="m-points">Reward points earned per muffin</Label>
+                <Input
+                  id="m-points"
+                  type="number"
+                  min="0"
+                  value={form.points_value}
+                  onChange={(e) => setForm({ ...form, points_value: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="m-image">Photo</Label>
+                <div className="flex items-center gap-3">
+                  <MuffinImage path={form.image_url} alt="" className="h-16 w-16 shrink-0" />
+                  <Input
+                    id="m-image"
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleUpload(file);
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Photos show on the customer muffin menu.
+                </p>
+              </div>
               <div className="flex items-center justify-between rounded-2xl surface-cream px-4 py-3">
                 <Label htmlFor="m-active">Available to order</Label>
                 <Switch
@@ -638,14 +703,15 @@ function MuffinManager() {
           {(muffins ?? []).map((muffin) => (
             <Card key={muffin.id} className="rounded-2xl">
               <CardContent className="flex items-start justify-between gap-4 p-5">
-                <div className="min-w-0">
+                <MuffinImage path={muffin.image_url} alt={muffin.name} className="h-16 w-16 shrink-0" />
+                <div className="min-w-0 flex-1">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
                     {muffin.flavour}
                   </p>
                   <h3 className="font-display text-lg text-primary">{muffin.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     {currency(muffin.price)} · {muffin.stock} in stock ·{" "}
-                    {muffin.is_active ? "Available" : "Hidden"}
+                    {muffin.points_value ?? 0} pts · {muffin.is_active ? "Available" : "Hidden"}
                   </p>
                 </div>
                 <div className="flex gap-1">

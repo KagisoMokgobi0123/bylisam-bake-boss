@@ -114,6 +114,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           name: string
+          points_value: number
           price: number
           stock: number
           updated_at: string
@@ -127,6 +128,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           name: string
+          points_value?: number
           price?: number
           stock?: number
           updated_at?: string
@@ -140,6 +142,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           name?: string
+          points_value?: number
           price?: number
           stock?: number
           updated_at?: string
@@ -325,6 +328,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_active: boolean
           phone: string | null
           points: number
           updated_at: string
@@ -335,6 +339,7 @@ export type Database = {
           email?: string
           full_name?: string
           id: string
+          is_active?: boolean
           phone?: string | null
           points?: number
           updated_at?: string
@@ -345,6 +350,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_active?: boolean
           phone?: string | null
           points?: number
           updated_at?: string
@@ -434,6 +440,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reward_transactions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          order_id: string | null
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          order_id?: string | null
+          points: number
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          order_id?: string | null
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rewards: {
         Row: {

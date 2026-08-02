@@ -13,6 +13,7 @@ export type ReceiptOrder = {
   collected_at?: string | null;
   amount_paid?: number | null;
   cashier_name?: string | null;
+  points_awarded?: number | null;
 };
 
 
@@ -22,26 +23,78 @@ export type ReceiptItem = {
   unit_price: number;
 };
 
+export type ReceiptBusinessInfo = {
+  name?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  taxRate?: number | null;
+  footer?: string | null;
+  cashierName?: string | null;
+};
+
+const WIDTH = 40;
+
+const rule = (char: string) => char.repeat(WIDTH);
+
+/** Right-aligns a value against a label so the plain-text receipt lines up. */
+function row(label: string, value: string) {
+  const pad = Math.max(1, WIDTH - label.length - value.length);
+  return `${label}${" ".repeat(pad)}${value}`;
+}
+
+function itemRow(item: ReceiptItem) {
+  const total = currency(Number(item.unit_price) * item.quantity);
+  const qtyPrice = `${item.quantity} x ${currency(item.unit_price)}`;
+  const name = item.muffin_name.length > 18 ? `${item.muffin_name.slice(0, 17)}…` : item.muffin_name;
+  return row(`${name}  ${qtyPrice}`, total);
+}
+
+/** Builds a monospaced, till-slip style receipt for WhatsApp. */
 export function buildReceiptText(
   order: ReceiptOrder,
   items: ReceiptItem[],
-  businessName = "BYLISAM",
+  business: string | ReceiptBusinessInfo = "BYLISAM",
 ) {
-  const lines = items.map(
-    (i) => `• ${i.quantity} × ${i.muffin_name} — ${currency(Number(i.unit_price) * i.quantity)}`,
-  );
-  return [
-    `${businessName} receipt`,
-    `Order ${order.reference}`,
-    formatDate(order.collected_at ?? order.created_at),
-    "",
-    ...lines,
-    "",
-    `Subtotal: ${currency(order.subtotal)}`,
-    ...(Number(order.discount) > 0 ? [`Reward discount: -${currency(order.discount)}`] : []),
-    `Total: ${currency(order.total)}`,
-    `Payment method: ${order.payment_method.toUpperCase()}`,
-  ].join("\n");
+  const info: ReceiptBusinessInfo = typeof business === "string" ? { name: business } : business;
+  const name = info.name || "BYLISAM";
+  const taxRate = Number(info.taxRate ?? 0);
+  const total = Number(order.total);
+  const discount = Number(order.discount);
+  const tax = taxRate > 0 ? total - total / (1 + taxRate / 100) : 0;
+  const paid = order.amount_paid != null ? Number(order.amount_paid) : total;
+  const change = Math.max(0, paid - total);
+
+  const lines = [
+    rule("="),
+    name.toUpperCase(),
+    ...(info.address ? [info.address] : []),
+    ...(info.phone ? [`Tel: ${info.phone}`] : []),
+    ...(info.email ? [info.email] : []),
+    rule("="),
+    row("Receipt No", order.reference),
+    row("Date", formatDate(order.collected_at ?? order.created_at)),
+    row("Cashier", info.cashierName || order.cashier_name || "BYLISAM staff"),
+    ...(order.customer_name ? [row("Customer", order.customer_name)] : []),
+    rule("-"),
+    row("Item  Qty x Price", "Total"),
+    rule("-"),
+    ...items.map(itemRow),
+    rule("-"),
+    row("Subtotal", currency(order.subtotal)),
+    ...(discount > 0 ? [row("Discount", `-${currency(discount)}`)] : []),
+    ...(taxRate > 0 ? [row(`VAT (${taxRate}% incl.)`, currency(tax))] : []),
+    rule("-"),
+    row("TOTAL", currency(total)),
+    row(`${order.payment_method.toUpperCase()} paid`, currency(paid)),
+    row("Change", currency(change)),
+    ...(Number(order.points_awarded ?? 0) > 0
+      ? [rule("-"), row("Reward points earned", String(order.points_awarded))]
+      : []),
+    rule("="),
+  ];
+
+  return "```\n" + lines.join("\n") + "\n```";
 }
 
 export function normalisePhone(phone: string) {
@@ -76,7 +129,7 @@ export function buildWhatsAppLink(
   receipt: string,
   thankYouMessage: string,
 ) {
-  const text = withFeedbackInvite(`${thankYouMessage}\n\n${receipt}`);
+  const text = withFeedbackInvite(`${receipt}\n\n${thankYouMessage}`);
   return `https://wa.me/${normalisePhone(phone)}?text=${encodeURIComponent(text)}`;
 }
 
