@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfile, useSession } from "@/lib/auth";
@@ -25,12 +24,13 @@ import { buildReceiptText, buildWhatsAppLink, DEFAULT_THANK_YOU } from "@/lib/wh
 import { ProfitCalculator } from "@/components/admin/profit-calculator";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
 import { WalkInPanel } from "@/components/admin/walk-in-panel";
+import { UsersManager } from "@/components/admin/users-manager";
 import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
 import { useProductionCosts, useProductionSettings } from "@/lib/production";
 
 const adminSearchSchema = z.object({
   tab: z
-    .enum(["overview", "orders", "walk-in", "muffins", "profit", "reviews"])
+    .enum(["overview", "orders", "walk-in", "muffins", "profit", "reviews", "users"])
     .optional(),
 });
 
