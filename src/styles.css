@@ -190,3 +190,28 @@
 @utility surface-cream {
   background-color: var(--cream);
 }
+
+/* Thermal-printer friendly receipts: print only the slip, nothing around it. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #receipt-print-area,
+  #receipt-print-area * {
+    visibility: visible;
+  }
+
+  #receipt-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 76mm;
+    background: #fff;
+    color: #000;
+  }
+
+  @page {
+    margin: 4mm;
+  }
+}
