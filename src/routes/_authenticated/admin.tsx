@@ -25,6 +25,8 @@ import { ProfitCalculator } from "@/components/admin/profit-calculator";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
 import { WalkInPanel } from "@/components/admin/walk-in-panel";
 import { UsersManager } from "@/components/admin/users-manager";
+import { MuffinImage } from "@/components/muffin-image";
+import { uploadMuffinImage } from "@/lib/muffin-images";
 import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
 import { useProductionCosts, useProductionSettings } from "@/lib/production";
 
@@ -465,6 +467,8 @@ const emptyMuffin = {
   description: "",
   price: "0",
   stock: "0",
+  points_value: "1",
+  image_url: "" as string,
   is_active: true,
 };
 
@@ -474,6 +478,20 @@ function MuffinManager() {
   const [editing, setEditing] = useState<Muffin | null>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...emptyMuffin });
+  const [uploading, setUploading] = useState(false);
+
+  async function handleUpload(file: File) {
+    try {
+      setUploading(true);
+      const path = await uploadMuffinImage(file);
+      setForm((prev) => ({ ...prev, image_url: path }));
+      toast.success("Photo uploaded.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not upload photo");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function openNew() {
     setEditing(null);
@@ -489,6 +507,8 @@ function MuffinManager() {
       description: muffin.description,
       price: String(muffin.price),
       stock: String(muffin.stock),
+      points_value: String(muffin.points_value ?? 1),
+      image_url: muffin.image_url ?? "",
       is_active: muffin.is_active,
     });
     setOpen(true);
@@ -503,6 +523,8 @@ function MuffinManager() {
         description: form.description.trim(),
         price: Number(form.price) || 0,
         stock: Math.max(0, Math.round(Number(form.stock) || 0)),
+        points_value: Math.max(0, Math.round(Number(form.points_value) || 0)),
+        image_url: form.image_url || null,
         is_active: form.is_active,
       };
       const { error } = editing
@@ -594,6 +616,35 @@ function MuffinManager() {
                   />
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="m-points">Reward points earned per muffin</Label>
+                <Input
+                  id="m-points"
+                  type="number"
+                  min="0"
+                  value={form.points_value}
+                  onChange={(e) => setForm({ ...form, points_value: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="m-image">Photo</Label>
+                <div className="flex items-center gap-3">
+                  <MuffinImage path={form.image_url} alt="" className="h-16 w-16 shrink-0" />
+                  <Input
+                    id="m-image"
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleUpload(file);
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Photos show on the customer muffin menu.
+                </p>
+              </div>
               <div className="flex items-center justify-between rounded-2xl surface-cream px-4 py-3">
                 <Label htmlFor="m-active">Available to order</Label>
                 <Switch
@@ -622,14 +673,15 @@ function MuffinManager() {
           {(muffins ?? []).map((muffin) => (
             <Card key={muffin.id} className="rounded-2xl">
               <CardContent className="flex items-start justify-between gap-4 p-5">
-                <div className="min-w-0">
+                <MuffinImage path={muffin.image_url} alt={muffin.name} className="h-16 w-16 shrink-0" />
+                <div className="min-w-0 flex-1">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
                     {muffin.flavour}
                   </p>
                   <h3 className="font-display text-lg text-primary">{muffin.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     {currency(muffin.price)} · {muffin.stock} in stock ·{" "}
-                    {muffin.is_active ? "Available" : "Hidden"}
+                    {muffin.points_value ?? 0} pts · {muffin.is_active ? "Available" : "Hidden"}
                   </p>
                 </div>
                 <div className="flex gap-1">
