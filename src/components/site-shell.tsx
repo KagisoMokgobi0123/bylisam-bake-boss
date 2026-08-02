@@ -14,17 +14,28 @@ const publicLinks = [
   { to: "/feedback", label: "Feedback" },
 ] as const;
 
+const customerLinks = [
+  { to: "/order", label: "Order" },
+  { to: "/orders", label: "My orders" },
+  { to: "/rewards", label: "Rewards" },
+  { to: "/profile", label: "Profile" },
+] as const;
+
 const adminTabs = [
   { tab: "overview", label: "Overview" },
   { tab: "orders", label: "Orders" },
-  { tab: "walk-in", label: "New order" },
-  { tab: "muffins", label: "Muffins" },
-  { tab: "profit", label: "Profit" },
+  { tab: "walk-in", label: "Walk-ins" },
+  { tab: "muffins", label: "Muffins & prices" },
+  { tab: "profit", label: "Profit calculator" },
   { tab: "reviews", label: "Reviews" },
+  { tab: "users", label: "Users" },
 ] as const;
 
 const navClass =
   "rounded-full px-3 py-2 text-sm font-medium text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground data-[status=active]:bg-primary-foreground/15 data-[status=active]:text-primary-foreground";
+
+const mobileNavClass =
+  "rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent";
 
 export function SiteHeader() {
   const { user } = useSession();
@@ -40,16 +51,19 @@ export function SiteHeader() {
     navigate({ to: "/auth", replace: true });
   }
 
+  // Admins get the management menu only; customers keep the shop menu.
+  const links = isAdmin ? publicLinks.slice(0, 1) : publicLinks;
+
   return (
-    <header className="sticky top-0 z-40 border-b border-primary/15 bg-primary text-primary-foreground shadow-soft">
+    <header className="sticky top-0 z-40 border-b border-primary/15 bg-primary text-primary-foreground shadow-soft print:hidden">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
           <Cookie className="h-6 w-6" aria-hidden />
           BYLISAM
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
-          {publicLinks.map((link) => (
+        <nav className="hidden items-center gap-1 xl:flex">
+          {links.map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -61,19 +75,20 @@ export function SiteHeader() {
           ))}
           {isAdmin
             ? adminTabs.map((item) => (
-                <Link
-                  key={item.tab}
-                  to="/admin"
-                  search={{ tab: item.tab }}
-                  className={navClass}
-                >
+                <Link key={item.tab} to="/admin" search={{ tab: item.tab }} className={navClass}>
                   {item.label}
                 </Link>
               ))
-            : null}
+            : user
+              ? customerLinks.map((link) => (
+                  <Link key={link.to} to={link.to} className={navClass}>
+                    {link.label}
+                  </Link>
+                ))
+              : null}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="hidden items-center gap-2 xl:flex">
           {user ? (
             <Button variant="secondary" size="sm" className="rounded-full" onClick={signOut}>
               <LogOut className="mr-1.5 h-4 w-4" /> Sign out
@@ -81,14 +96,14 @@ export function SiteHeader() {
           ) : (
             <Button asChild size="sm" variant="secondary" className="rounded-full">
               <Link to="/auth">
-                <LayoutDashboard className="mr-1.5 h-4 w-4" /> Staff sign in
+                <LayoutDashboard className="mr-1.5 h-4 w-4" /> Sign in
               </Link>
             </Button>
           )}
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="lg:hidden">
+          <SheetTrigger asChild className="xl:hidden">
             <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open menu</span>
@@ -97,12 +112,12 @@ export function SiteHeader() {
           <SheetContent side="right" className="w-72 overflow-y-auto bg-card">
             <SheetTitle className="font-display text-lg text-primary">BYLISAM</SheetTitle>
             <nav className="mt-6 flex flex-col gap-1">
-              {publicLinks.map((link) => (
+              {links.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
                   onClick={() => setOpen(false)}
-                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                  className={mobileNavClass}
                 >
                   {link.label}
                 </Link>
@@ -119,9 +134,25 @@ export function SiteHeader() {
                       to="/admin"
                       search={{ tab: item.tab }}
                       onClick={() => setOpen(false)}
-                      className="rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                      className={mobileNavClass}
                     >
                       {item.label}
+                    </Link>
+                  ))}
+                </>
+              ) : user ? (
+                <>
+                  <p className="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    My account
+                  </p>
+                  {customerLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setOpen(false)}
+                      className={mobileNavClass}
+                    >
+                      {link.label}
                     </Link>
                   ))}
                 </>
@@ -135,7 +166,7 @@ export function SiteHeader() {
                 ) : (
                   <Button asChild className="w-full rounded-full">
                     <Link to="/auth" onClick={() => setOpen(false)}>
-                      Staff sign in
+                      Sign in
                     </Link>
                   </Button>
                 )}
@@ -150,7 +181,7 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-border bg-card">
+    <footer className="mt-16 border-t border-border bg-card print:hidden">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p className="flex items-center gap-2 font-display text-base text-primary">
           <Cookie className="h-5 w-5" aria-hidden /> BYLISAM
