@@ -173,8 +173,20 @@ function OrderPage() {
       <div className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="font-display text-3xl text-primary">Place an order</h1>
         <p className="mt-2 text-muted-foreground">
-          Choose your muffins, pick how you'd like to pay on collection, and we'll do the rest.
+          Tap a muffin for a closer look, pick how you'd like to pay on collection, and we'll do
+          the rest.
         </p>
+
+        {!isOpen ? (
+          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-foreground">
+            <Clock className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden />
+            <p>
+              <span className="font-semibold text-destructive">We're closed right now.</span> You
+              can still place your order — it will be reviewed and confirmed as soon as we re-open
+              {settings?.opening_hours ? ` (${settings.opening_hours})` : ""}.
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
@@ -186,15 +198,22 @@ function OrderPage() {
                   return (
                     <Card key={muffin.id} className="rounded-2xl">
                       <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
-                        <div className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => setPreview(muffin)}
+                          className="min-w-0 text-left"
+                        >
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             {muffin.flavour}
                           </p>
-                          <h2 className="font-display text-lg text-primary">{muffin.name}</h2>
+                          <h2 className="font-display text-lg text-primary underline-offset-4 hover:underline">
+                            {muffin.name}
+                          </h2>
                           <p className="text-sm text-muted-foreground">
                             {currency(muffin.price)} · {soldOut ? "Sold out" : `${muffin.stock} available`}
                           </p>
-                        </div>
+                        </button>
+
                         <div className="flex items-center gap-2">
                           <Button
                             type="button"
