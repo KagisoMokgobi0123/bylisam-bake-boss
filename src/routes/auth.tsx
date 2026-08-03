@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { sendSignupOtp, verifySignupOtp } from "@/lib/otp.functions";
+import { fetchIsAdmin } from "@/lib/auth";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "register"]).optional(),
