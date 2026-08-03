@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDay } from "@/lib/format";
 import { submitFeedback } from "@/lib/feedback.functions";
+import { containsProfanity, PROFANITY_ERROR, PROFANITY_NOTICE } from "@/lib/profanity";
 import { useApprovedReviews } from "@/lib/reviews";
 
 export const Route = createFileRoute("/feedback")({
