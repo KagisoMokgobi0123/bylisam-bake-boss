@@ -21,6 +21,10 @@ const MAX_PER_WINDOW = 3;
  * so customers can leave feedback without creating an account.
  */
 export async function submitGuestFeedback(input: FeedbackInput, clientKey: string) {
+  if (containsProfanity(input.comment) || containsProfanity(input.customerName)) {
+    throw new Error(PROFANITY_ERROR);
+  }
+
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   const since = new Date(Date.now() - WINDOW_MS).toISOString();

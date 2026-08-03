@@ -33,7 +33,7 @@ export type ReceiptBusinessInfo = {
   cashierName?: string | null;
 };
 
-const WIDTH = 40;
+const WIDTH = 32;
 
 const rule = (char: string) => char.repeat(WIDTH);
 
@@ -45,12 +45,11 @@ function row(label: string, value: string) {
 
 function itemRow(item: ReceiptItem) {
   const total = currency(Number(item.unit_price) * item.quantity);
-  const qtyPrice = `${item.quantity} x ${currency(item.unit_price)}`;
-  const name = item.muffin_name.length > 18 ? `${item.muffin_name.slice(0, 17)}…` : item.muffin_name;
-  return row(`${name}  ${qtyPrice}`, total);
+  const name = item.muffin_name.length > 16 ? `${item.muffin_name.slice(0, 15)}…` : item.muffin_name;
+  return row(`${item.quantity}x ${name}`, total);
 }
 
-/** Builds a monospaced, till-slip style receipt for WhatsApp. */
+/** Builds a compact, monospaced till-slip style receipt for WhatsApp. */
 export function buildReceiptText(
   order: ReceiptOrder,
   items: ReceiptItem[],
@@ -64,32 +63,27 @@ export function buildReceiptText(
   const tax = taxRate > 0 ? total - total / (1 + taxRate / 100) : 0;
   const paid = order.amount_paid != null ? Number(order.amount_paid) : total;
   const change = Math.max(0, paid - total);
+  const contact = [info.phone ? `Tel ${info.phone}` : null, info.address].filter(Boolean).join(" · ");
 
   const lines = [
     rule("="),
     name.toUpperCase(),
-    ...(info.address ? [info.address] : []),
-    ...(info.phone ? [`Tel: ${info.phone}`] : []),
-    ...(info.email ? [info.email] : []),
-    rule("="),
-    row("Receipt No", order.reference),
-    row("Date", formatDate(order.collected_at ?? order.created_at)),
-    row("Cashier", info.cashierName || order.cashier_name || "BYLISAM staff"),
-    ...(order.customer_name ? [row("Customer", order.customer_name)] : []),
+    ...(contact ? [contact] : []),
     rule("-"),
-    row("Item  Qty x Price", "Total"),
+    row(`No ${order.reference}`, formatDate(order.collected_at ?? order.created_at)),
+    row(`Cashier ${info.cashierName || order.cashier_name || "BYLISAM"}`, ""),
+    ...(order.customer_name ? [row(`Customer ${order.customer_name}`, "")] : []),
     rule("-"),
     ...items.map(itemRow),
     rule("-"),
     row("Subtotal", currency(order.subtotal)),
     ...(discount > 0 ? [row("Discount", `-${currency(discount)}`)] : []),
-    ...(taxRate > 0 ? [row(`VAT (${taxRate}% incl.)`, currency(tax))] : []),
-    rule("-"),
+    ...(taxRate > 0 ? [row(`VAT ${taxRate}%`, currency(tax))] : []),
     row("TOTAL", currency(total)),
     row(`${order.payment_method.toUpperCase()} paid`, currency(paid)),
     row("Change", currency(change)),
     ...(Number(order.points_awarded ?? 0) > 0
-      ? [rule("-"), row("Reward points earned", String(order.points_awarded))]
+      ? [row("Points earned", String(order.points_awarded))]
       : []),
     rule("="),
   ];
