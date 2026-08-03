@@ -120,7 +120,7 @@ function AuthPage() {
       });
       if (error) throw error;
       toast.success("Email verified — welcome to BYLISAM! 🧁");
-      navigate({ to: "/admin", search: { tab: "overview" } });
+      await landAfterSignIn();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Verification failed");
     } finally {
