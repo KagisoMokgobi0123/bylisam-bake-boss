@@ -58,6 +58,7 @@ export function WalkInPanel() {
           phone: trimmed || null,
           whatsapp_number: trimmed || null,
           is_student: isStudent,
+          residence: res,
           payment_method: payment,
           subtotal: total,
           discount: 0,
