@@ -121,9 +121,11 @@ function AdminPage() {
     orders: "Orders",
     "walk-in": "Walk-ins",
     muffins: "Muffins & prices",
+    reports: "Reports",
     profit: "Profit calculator",
     reviews: "Reviews",
     users: "Users",
+    settings: "Profile & business settings",
   };
 
   return (
@@ -142,9 +144,11 @@ function AdminPage() {
           {current === "orders" ? <OrdersBoard /> : null}
           {current === "walk-in" ? <WalkInPanel /> : null}
           {current === "muffins" ? <MuffinManager /> : null}
+          {current === "reports" ? <AdminReports /> : null}
           {current === "profit" ? <ProfitCalculator /> : null}
           {current === "reviews" ? <ReviewsManager /> : null}
           {current === "users" ? <UsersManager /> : null}
+          {current === "settings" ? <BusinessSettings /> : null}
         </div>
       </div>
     </PageShell>
