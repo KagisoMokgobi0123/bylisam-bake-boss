@@ -177,7 +177,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
       toast.success("Welcome back!");
-      navigate({ to: "/admin", search: { tab: "overview" } });
+      await landAfterSignIn();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Sign in failed");
     } finally {
