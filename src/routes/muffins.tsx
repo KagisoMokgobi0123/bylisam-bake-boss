@@ -103,6 +103,22 @@ function MuffinsPage() {
               ))}
         </div>
 
+        <MuffinPreviewDialog
+          muffin={selected}
+          open={!!selected}
+          onOpenChange={(next) => !next && setSelected(null)}
+          actionLabel={user ? "Order now" : "Sign in to order"}
+          onConfirm={(muffin, qty) => {
+            setSelected(null);
+            navigate(
+              user
+                ? { to: "/order", search: { muffin: muffin.id, qty } }
+                : { to: "/auth" },
+            );
+          }}
+        />
+
+
         {!isLoading && (muffins ?? []).length === 0 ? (
           <p className="mt-10 text-center text-muted-foreground">
             No muffins are listed yet — check back soon.
