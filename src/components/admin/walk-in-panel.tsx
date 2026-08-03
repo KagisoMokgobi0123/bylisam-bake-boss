@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Loader2, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -16,10 +17,12 @@ import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 export function WalkInPanel() {
   const { data: muffins, isLoading } = useMuffins();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [residence, setResidence] = useState("");
   const [isStudent, setIsStudent] = useState(true);
   const [payment, setPayment] = useState<"cash" | "eft">("cash");
 
@@ -32,6 +35,7 @@ export function WalkInPanel() {
   function setQty(id: string, qty: number, max: number) {
     setCart((prev) => ({ ...prev, [id]: Math.max(0, Math.min(qty, max)) }));
   }
+
 
   const create = useMutation({
     mutationFn: async () => {
