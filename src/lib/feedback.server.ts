@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { containsProfanity, PROFANITY_ERROR } from "./profanity";
+
 export const feedbackInputSchema = z.object({
   customerName: z.string().trim().min(2, "Please tell us your name").max(80),
   orderReference: z.string().trim().max(40).optional().nullable(),
