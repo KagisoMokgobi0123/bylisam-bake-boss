@@ -344,6 +344,21 @@ function OrderPage() {
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="residence">Student residence *</Label>
+                <Input
+                  id="residence"
+                  required
+                  maxLength={80}
+                  placeholder="e.g. Kovacs Residence"
+                  value={residence}
+                  onChange={(e) => setResidence(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Required — it helps us plan each residence's collection.
+                </p>
+              </div>
+
 
               <div className="space-y-2">
                 <Label htmlFor="notes">Note for BYLISAM (optional)</Label>
