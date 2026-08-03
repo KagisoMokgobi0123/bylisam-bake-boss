@@ -85,7 +85,9 @@ export function WalkInPanel() {
       setCart({});
       setName("");
       setWhatsapp("");
+      setResidence("");
       toast.success(`Walk-in order ${reference} created.`);
+      navigate({ to: "/admin", search: { tab: "orders" } });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not create"),
   });
