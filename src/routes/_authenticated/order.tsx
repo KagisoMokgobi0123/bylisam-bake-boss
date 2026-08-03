@@ -45,13 +45,30 @@ function OrderPage() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
   const { data: muffins, isLoading } = useMuffins();
+  const { data: settings } = useAppSettings();
+  const { muffin: preselectedId, qty: preselectedQty } = Route.useSearch();
   const [cart, setCart] = useState<Record<string, number>>({});
   const [payment, setPayment] = useState<"cash" | "eft">("cash");
   const [notes, setNotes] = useState("");
+  const [residence, setResidence] = useState("");
   const [whatsapp, setWhatsapp] = useState<string | null>(null);
   const [rewardId, setRewardId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Muffin | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isOpen = settings?.is_open ?? true;
+
+  // A muffin picked from the "quick look" popup on the menu page lands here.
+  useEffect(() => {
+    if (!preselectedId || !muffins) return;
+    const match = muffins.find((m) => m.id === preselectedId);
+    if (!match) return;
+    setCart((prev) => ({
+      ...prev,
+      [match.id]: Math.min(Math.max(1, preselectedQty ?? 1), Math.max(1, match.stock)),
+    }));
+  }, [preselectedId, preselectedQty, muffins]);
+
 
   const { data: rewards } = useQuery({
     queryKey: ["my-rewards", user?.id],
