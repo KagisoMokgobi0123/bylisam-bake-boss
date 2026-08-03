@@ -108,6 +108,14 @@ function AuthPage() {
     }
   }
 
+  /** Admins go to the dashboard; customers land on their own home page. */
+  async function landAfterSignIn() {
+    const { data } = await supabase.auth.getUser();
+    const isAdmin = data.user ? await fetchIsAdmin(data.user.id) : false;
+    if (isAdmin) navigate({ to: "/admin", search: { tab: "overview" } });
+    else navigate({ to: "/" });
+  }
+
   async function handleVerify(event: React.FormEvent) {
     event.preventDefault();
     if (!pendingUserId) return;
