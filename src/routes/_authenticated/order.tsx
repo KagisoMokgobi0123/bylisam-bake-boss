@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Minus, Plus, Loader2, Gift } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Minus, Plus, Loader2, Gift, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageShell } from "@/components/site-shell";
+import { MuffinPreviewDialog } from "@/components/muffin-preview-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,11 +16,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useSession } from "@/lib/auth";
 import { currency } from "@/lib/format";
-import { useMuffins } from "@/lib/queries";
+import { useAppSettings, useMuffins, type Muffin } from "@/lib/queries";
 import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 import { rewardLabel, discountForReward, type RewardRow } from "@/lib/rewards";
 
 export const Route = createFileRoute("/_authenticated/order")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    muffin: typeof search.muffin === "string" ? search.muffin : undefined,
+    qty: Number(search.qty) > 0 ? Number(search.qty) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Place an Order — BYLISAM" },
@@ -34,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/order")({
   }),
   component: OrderPage,
 });
+
 
 function OrderPage() {
   const { user } = useSession();
