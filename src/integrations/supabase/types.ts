@@ -18,9 +18,13 @@ export type Database = {
         Row: {
           business_address: string
           business_email: string
+          business_logo_url: string
           business_name: string
           business_phone: string
+          business_slogan: string
           id: boolean
+          is_open: boolean
+          opening_hours: string
           receipt_footer: string
           tax_rate: number
           updated_at: string
@@ -30,9 +34,13 @@ export type Database = {
         Insert: {
           business_address?: string
           business_email?: string
+          business_logo_url?: string
           business_name?: string
           business_phone?: string
+          business_slogan?: string
           id?: boolean
+          is_open?: boolean
+          opening_hours?: string
           receipt_footer?: string
           tax_rate?: number
           updated_at?: string
@@ -42,9 +50,13 @@ export type Database = {
         Update: {
           business_address?: string
           business_email?: string
+          business_logo_url?: string
           business_name?: string
           business_phone?: string
+          business_slogan?: string
           id?: boolean
+          is_open?: boolean
+          opening_hours?: string
           receipt_footer?: string
           tax_rate?: number
           updated_at?: string
@@ -211,6 +223,7 @@ export type Database = {
           phone: string | null
           points_awarded: number
           reference: string
+          residence: string
           reward_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
@@ -234,6 +247,7 @@ export type Database = {
           phone?: string | null
           points_awarded?: number
           reference?: string
+          residence?: string
           reward_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
@@ -257,6 +271,7 @@ export type Database = {
           phone?: string | null
           points_awarded?: number
           reference?: string
+          residence?: string
           reward_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
