@@ -173,6 +173,19 @@ export function WalkInPanel() {
             <Label htmlFor="wi-student">Student</Label>
             <Switch id="wi-student" checked={isStudent} onCheckedChange={setIsStudent} />
           </div>
+          {isStudent ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="wi-residence">Student residence *</Label>
+              <Input
+                id="wi-residence"
+                required
+                maxLength={80}
+                value={residence}
+                onChange={(e) => setResidence(e.target.value)}
+                placeholder="e.g. Kovacs Residence"
+              />
+            </div>
+          ) : null}
           <div className="flex gap-2">
             {(["cash", "eft"] as const).map((method) => (
               <Button
