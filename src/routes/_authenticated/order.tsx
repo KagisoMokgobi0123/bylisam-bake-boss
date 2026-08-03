@@ -112,6 +112,10 @@ function OrderPage() {
     mutationFn: async () => {
       if (lines.length === 0) throw new Error("Add at least one muffin to your order.");
       const trimmedWhatsapp = whatsappValue.trim();
+      const trimmedResidence = residence.trim();
+      if (trimmedResidence.length < 2) {
+        throw new Error("Please tell us which student residence you're in.");
+      }
       // Optional field: only validated when the customer actually typed something.
       if (trimmedWhatsapp && !isValidWhatsAppNumber(trimmedWhatsapp)) {
         throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
@@ -124,7 +128,7 @@ function OrderPage() {
           customer_name: profile?.full_name || user!.email || "Customer",
           phone: trimmedWhatsapp || profile?.phone || null,
           whatsapp_number: trimmedWhatsapp || null,
-
+          residence: trimmedResidence,
           is_student: true,
           payment_method: payment,
           subtotal,
