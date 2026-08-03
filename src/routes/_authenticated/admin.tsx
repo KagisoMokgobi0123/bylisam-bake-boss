@@ -265,7 +265,7 @@ function OrdersBoard() {
   const queryClient = useQueryClient();
   const [receiptId, setReceiptId] = useState<string | null>(null);
 
-  const cashierName = adminProfile?.full_name || user?.email || "BYLISAM staff";
+  const cashierName = adminProfile?.full_name || "BYLISAM staff";
 
   const receiptBusiness = {
     name: settings?.business_name ?? "BYLISAM",
