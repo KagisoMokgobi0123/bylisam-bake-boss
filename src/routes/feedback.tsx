@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDay } from "@/lib/format";
 import { submitFeedback } from "@/lib/feedback.functions";
+import { containsProfanity, PROFANITY_ERROR, PROFANITY_NOTICE } from "@/lib/profanity";
 import { useApprovedReviews } from "@/lib/reviews";
 
 export const Route = createFileRoute("/feedback")({
@@ -50,8 +51,11 @@ function FeedbackPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const submit = useMutation({
-    mutationFn: async () =>
-      send({
+    mutationFn: async () => {
+      if (containsProfanity(comment) || containsProfanity(name)) {
+        throw new Error(PROFANITY_ERROR);
+      }
+      return send({
         data: {
           customerName: name.trim(),
           orderReference: reference.trim() || null,
@@ -59,7 +63,8 @@ function FeedbackPage() {
           comment: comment.trim(),
           website,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       setSubmitted(true);
@@ -161,6 +166,11 @@ function FeedbackPage() {
                 <p className="text-xs text-muted-foreground">
                   To keep reviews genuine we limit how many can be sent from one device each hour.
                 </p>
+
+                <p className="rounded-2xl bg-accent/60 p-3 text-xs text-accent-foreground">
+                  {PROFANITY_NOTICE}
+                </p>
+
 
                 {submitted ? (
                   <p className="rounded-2xl surface-cream p-3 text-sm text-muted-foreground">

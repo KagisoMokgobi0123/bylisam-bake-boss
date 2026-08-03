@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { containsProfanity, PROFANITY_ERROR } from "./profanity";
+
 export const feedbackInputSchema = z.object({
   customerName: z.string().trim().min(2, "Please tell us your name").max(80),
   orderReference: z.string().trim().max(40).optional().nullable(),
@@ -19,6 +21,10 @@ const MAX_PER_WINDOW = 3;
  * so customers can leave feedback without creating an account.
  */
 export async function submitGuestFeedback(input: FeedbackInput, clientKey: string) {
+  if (containsProfanity(input.comment) || containsProfanity(input.customerName)) {
+    throw new Error(PROFANITY_ERROR);
+  }
+
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   const since = new Date(Date.now() - WINDOW_MS).toISOString();

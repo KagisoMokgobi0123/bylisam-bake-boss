@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Loader2, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -16,10 +17,12 @@ import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 export function WalkInPanel() {
   const { data: muffins, isLoading } = useMuffins();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [residence, setResidence] = useState("");
   const [isStudent, setIsStudent] = useState(true);
   const [payment, setPayment] = useState<"cash" | "eft">("cash");
 
@@ -33,10 +36,15 @@ export function WalkInPanel() {
     setCart((prev) => ({ ...prev, [id]: Math.max(0, Math.min(qty, max)) }));
   }
 
+
   const create = useMutation({
     mutationFn: async () => {
       if (lines.length === 0) throw new Error("Add at least one muffin.");
       const trimmed = whatsapp.trim();
+      const res = residence.trim();
+      if (isStudent && res.length < 2) {
+        throw new Error("Please capture the student residence name.");
+      }
       // Optional field — validated only when the admin captured a number.
       if (trimmed && !isValidWhatsAppNumber(trimmed)) {
         throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
@@ -50,6 +58,7 @@ export function WalkInPanel() {
           phone: trimmed || null,
           whatsapp_number: trimmed || null,
           is_student: isStudent,
+          residence: res,
           payment_method: payment,
           subtotal: total,
           discount: 0,
@@ -76,7 +85,9 @@ export function WalkInPanel() {
       setCart({});
       setName("");
       setWhatsapp("");
+      setResidence("");
       toast.success(`Walk-in order ${reference} created.`);
+      navigate({ to: "/admin", search: { tab: "orders" } });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not create"),
   });
@@ -162,6 +173,19 @@ export function WalkInPanel() {
             <Label htmlFor="wi-student">Student</Label>
             <Switch id="wi-student" checked={isStudent} onCheckedChange={setIsStudent} />
           </div>
+          {isStudent ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="wi-residence">Student residence *</Label>
+              <Input
+                id="wi-residence"
+                required
+                maxLength={80}
+                value={residence}
+                onChange={(e) => setResidence(e.target.value)}
+                placeholder="e.g. Kovacs Residence"
+              />
+            </div>
+          ) : null}
           <div className="flex gap-2">
             {(["cash", "eft"] as const).map((method) => (
               <Button

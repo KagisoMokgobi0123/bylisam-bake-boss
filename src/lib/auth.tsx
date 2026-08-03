@@ -39,6 +39,18 @@ export function useProfile(userId?: string | null) {
   });
 }
 
+/** One-off admin check used right after sign-in to pick the landing page. */
+export async function fetchIsAdmin(userId: string) {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error) return false;
+  return !!data;
+}
+
 export function useIsAdmin(userId?: string | null) {
   return useQuery({
     queryKey: ["is-admin", userId],
@@ -55,3 +67,4 @@ export function useIsAdmin(userId?: string | null) {
     },
   });
 }
+

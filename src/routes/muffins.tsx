@@ -1,13 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { PageShell } from "@/components/site-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MuffinImage } from "@/components/muffin-image";
+import { MuffinPreviewDialog } from "@/components/muffin-preview-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { currency } from "@/lib/format";
-import { useMuffins } from "@/lib/queries";
+import { useMuffins, type Muffin } from "@/lib/queries";
 import { useSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/muffins")({
@@ -32,14 +34,16 @@ export const Route = createFileRoute("/muffins")({
 function MuffinsPage() {
   const { data: muffins, isLoading } = useMuffins();
   const { user } = useSession();
+  const navigate = useNavigate();
+  const [selected, setSelected] = useState<Muffin | null>(null);
 
   return (
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 py-12">
         <h1 className="font-display text-3xl text-primary">Our muffins</h1>
         <p className="mt-2 max-w-prose text-muted-foreground">
-          Small batches, baked fresh each morning. Prices include everything — pay with cash or
-          EFT when you collect.
+          Small batches, baked fresh each morning. Tap any muffin for a closer look — prices
+          include everything, and you pay with cash or EFT when you collect.
         </p>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -50,8 +54,18 @@ function MuffinsPage() {
             : (muffins ?? []).map((muffin) => (
                 <Card
                   key={muffin.id}
-                  className="rounded-2xl transition-transform duration-300 hover:-translate-y-1"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelected(muffin)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelected(muffin);
+                    }
+                  }}
+                  className="cursor-pointer rounded-2xl transition-transform duration-300 hover:-translate-y-1"
                 >
+
                   <CardContent className="flex h-full flex-col p-6">
                     <MuffinImage
                       path={muffin.image_url}
@@ -88,6 +102,22 @@ function MuffinsPage() {
                 </Card>
               ))}
         </div>
+
+        <MuffinPreviewDialog
+          muffin={selected}
+          open={!!selected}
+          onOpenChange={(next) => !next && setSelected(null)}
+          actionLabel={user ? "Order now" : "Sign in to order"}
+          onConfirm={(muffin, qty) => {
+            setSelected(null);
+            navigate(
+              user
+                ? { to: "/order", search: { muffin: muffin.id, qty } }
+                : { to: "/auth" },
+            );
+          }}
+        />
+
 
         {!isLoading && (muffins ?? []).length === 0 ? (
           <p className="mt-10 text-center text-muted-foreground">

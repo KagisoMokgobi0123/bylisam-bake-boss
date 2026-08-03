@@ -25,6 +25,8 @@ import { ProfitCalculator } from "@/components/admin/profit-calculator";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
 import { WalkInPanel } from "@/components/admin/walk-in-panel";
 import { UsersManager } from "@/components/admin/users-manager";
+import { AdminReports } from "@/components/admin/reports";
+import { BusinessSettings } from "@/components/admin/business-settings";
 import { MuffinImage } from "@/components/muffin-image";
 import { uploadMuffinImage } from "@/lib/muffin-images";
 import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
@@ -32,7 +34,17 @@ import { useProductionCosts, useProductionSettings } from "@/lib/production";
 
 const adminSearchSchema = z.object({
   tab: z
-    .enum(["overview", "orders", "walk-in", "muffins", "profit", "reviews", "users"])
+    .enum([
+      "overview",
+      "orders",
+      "walk-in",
+      "muffins",
+      "reports",
+      "profit",
+      "reviews",
+      "users",
+      "settings",
+    ])
     .optional(),
 });
 
@@ -109,9 +121,11 @@ function AdminPage() {
     orders: "Orders",
     "walk-in": "Walk-ins",
     muffins: "Muffins & prices",
+    reports: "Reports",
     profit: "Profit calculator",
     reviews: "Reviews",
     users: "Users",
+    settings: "Profile & business settings",
   };
 
   return (
@@ -130,9 +144,11 @@ function AdminPage() {
           {current === "orders" ? <OrdersBoard /> : null}
           {current === "walk-in" ? <WalkInPanel /> : null}
           {current === "muffins" ? <MuffinManager /> : null}
+          {current === "reports" ? <AdminReports /> : null}
           {current === "profit" ? <ProfitCalculator /> : null}
           {current === "reviews" ? <ReviewsManager /> : null}
           {current === "users" ? <UsersManager /> : null}
+          {current === "settings" ? <BusinessSettings /> : null}
         </div>
       </div>
     </PageShell>
@@ -249,7 +265,7 @@ function OrdersBoard() {
   const queryClient = useQueryClient();
   const [receiptId, setReceiptId] = useState<string | null>(null);
 
-  const cashierName = adminProfile?.full_name || user?.email || "BYLISAM staff";
+  const cashierName = adminProfile?.full_name || "BYLISAM staff";
 
   const receiptBusiness = {
     name: settings?.business_name ?? "BYLISAM",

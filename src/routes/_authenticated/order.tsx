@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Minus, Plus, Loader2, Gift } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Minus, Plus, Loader2, Gift, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageShell } from "@/components/site-shell";
+import { MuffinPreviewDialog } from "@/components/muffin-preview-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,11 +16,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useSession } from "@/lib/auth";
 import { currency } from "@/lib/format";
-import { useMuffins } from "@/lib/queries";
+import { useAppSettings, useMuffins, type Muffin } from "@/lib/queries";
 import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 import { rewardLabel, discountForReward, type RewardRow } from "@/lib/rewards";
 
 export const Route = createFileRoute("/_authenticated/order")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    muffin: typeof search.muffin === "string" ? search.muffin : undefined,
+    qty: Number(search.qty) > 0 ? Number(search.qty) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Place an Order — BYLISAM" },
@@ -35,17 +40,35 @@ export const Route = createFileRoute("/_authenticated/order")({
   component: OrderPage,
 });
 
+
 function OrderPage() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
   const { data: muffins, isLoading } = useMuffins();
+  const { data: settings } = useAppSettings();
+  const { muffin: preselectedId, qty: preselectedQty } = Route.useSearch();
   const [cart, setCart] = useState<Record<string, number>>({});
   const [payment, setPayment] = useState<"cash" | "eft">("cash");
   const [notes, setNotes] = useState("");
+  const [residence, setResidence] = useState("");
   const [whatsapp, setWhatsapp] = useState<string | null>(null);
   const [rewardId, setRewardId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Muffin | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isOpen = settings?.is_open ?? true;
+
+  // A muffin picked from the "quick look" popup on the menu page lands here.
+  useEffect(() => {
+    if (!preselectedId || !muffins) return;
+    const match = muffins.find((m) => m.id === preselectedId);
+    if (!match) return;
+    setCart((prev) => ({
+      ...prev,
+      [match.id]: Math.min(Math.max(1, preselectedQty ?? 1), Math.max(1, match.stock)),
+    }));
+  }, [preselectedId, preselectedQty, muffins]);
+
 
   const { data: rewards } = useQuery({
     queryKey: ["my-rewards", user?.id],
@@ -89,6 +112,10 @@ function OrderPage() {
     mutationFn: async () => {
       if (lines.length === 0) throw new Error("Add at least one muffin to your order.");
       const trimmedWhatsapp = whatsappValue.trim();
+      const trimmedResidence = residence.trim();
+      if (trimmedResidence.length < 2) {
+        throw new Error("Please tell us which student residence you're in.");
+      }
       // Optional field: only validated when the customer actually typed something.
       if (trimmedWhatsapp && !isValidWhatsAppNumber(trimmedWhatsapp)) {
         throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
@@ -101,7 +128,7 @@ function OrderPage() {
           customer_name: profile?.full_name || user!.email || "Customer",
           phone: trimmedWhatsapp || profile?.phone || null,
           whatsapp_number: trimmedWhatsapp || null,
-
+          residence: trimmedResidence,
           is_student: true,
           payment_method: payment,
           subtotal,
@@ -146,8 +173,20 @@ function OrderPage() {
       <div className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="font-display text-3xl text-primary">Place an order</h1>
         <p className="mt-2 text-muted-foreground">
-          Choose your muffins, pick how you'd like to pay on collection, and we'll do the rest.
+          Tap a muffin for a closer look, pick how you'd like to pay on collection, and we'll do
+          the rest.
         </p>
+
+        {!isOpen ? (
+          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-foreground">
+            <Clock className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden />
+            <p>
+              <span className="font-semibold text-destructive">We're closed right now.</span> You
+              can still place your order — it will be reviewed and confirmed as soon as we re-open
+              {settings?.opening_hours ? ` (${settings.opening_hours})` : ""}.
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
@@ -159,15 +198,22 @@ function OrderPage() {
                   return (
                     <Card key={muffin.id} className="rounded-2xl">
                       <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
-                        <div className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => setPreview(muffin)}
+                          className="min-w-0 text-left"
+                        >
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             {muffin.flavour}
                           </p>
-                          <h2 className="font-display text-lg text-primary">{muffin.name}</h2>
+                          <h2 className="font-display text-lg text-primary underline-offset-4 hover:underline">
+                            {muffin.name}
+                          </h2>
                           <p className="text-sm text-muted-foreground">
                             {currency(muffin.price)} · {soldOut ? "Sold out" : `${muffin.stock} available`}
                           </p>
-                        </div>
+                        </button>
+
                         <div className="flex items-center gap-2">
                           <Button
                             type="button"
@@ -197,6 +243,20 @@ function OrderPage() {
                   );
                 })}
           </div>
+
+          <MuffinPreviewDialog
+            muffin={preview}
+            open={!!preview}
+            onOpenChange={(next) => !next && setPreview(null)}
+            actionLabel="Add to order"
+            initialQty={preview ? Math.max(1, cart[preview.id] ?? 1) : 1}
+            onConfirm={(muffin, qty) => {
+              setQty(muffin.id, qty, muffin.stock);
+              setPreview(null);
+              toast.success(`${qty} × ${muffin.name} added.`);
+            }}
+          />
+
 
           <Card className="h-fit rounded-3xl lg:sticky lg:top-24">
             <CardContent className="space-y-5 p-6">
@@ -281,6 +341,21 @@ function OrderPage() {
                 />
                 <p className="text-xs text-muted-foreground">
                   Optional — you can place your order without it.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="residence">Student residence *</Label>
+                <Input
+                  id="residence"
+                  required
+                  maxLength={80}
+                  placeholder="e.g. Kovacs Residence"
+                  value={residence}
+                  onChange={(e) => setResidence(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Required — it helps us plan each residence's collection.
                 </p>
               </div>
 

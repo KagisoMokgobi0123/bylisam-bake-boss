@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { sendSignupOtp, verifySignupOtp } from "@/lib/otp.functions";
+import { fetchIsAdmin } from "@/lib/auth";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "register"]).optional(),
@@ -107,6 +108,14 @@ function AuthPage() {
     }
   }
 
+  /** Admins go to the dashboard; customers land on their own home page. */
+  async function landAfterSignIn() {
+    const { data } = await supabase.auth.getUser();
+    const isAdmin = data.user ? await fetchIsAdmin(data.user.id) : false;
+    if (isAdmin) navigate({ to: "/admin", search: { tab: "overview" } });
+    else navigate({ to: "/" });
+  }
+
   async function handleVerify(event: React.FormEvent) {
     event.preventDefault();
     if (!pendingUserId) return;
@@ -119,7 +128,7 @@ function AuthPage() {
       });
       if (error) throw error;
       toast.success("Email verified — welcome to BYLISAM! 🧁");
-      navigate({ to: "/admin", search: { tab: "overview" } });
+      await landAfterSignIn();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Verification failed");
     } finally {
@@ -168,7 +177,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
       toast.success("Welcome back!");
-      navigate({ to: "/admin", search: { tab: "overview" } });
+      await landAfterSignIn();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Sign in failed");
     } finally {

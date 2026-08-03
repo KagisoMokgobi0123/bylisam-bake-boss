@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as MuffinsRouteImport } from './routes/muffins'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedOrderRouteImport } from './routes/_authenticated/order'
@@ -43,6 +44,11 @@ const FeedbackRoute = FeedbackRouteImport.update({
 const MuffinsRoute = MuffinsRouteImport.update({
   id: '/muffins',
   path: '/muffins',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/order': typeof AuthenticatedOrderRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/order': typeof AuthenticatedOrderRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/feedback': typeof FeedbackRoute
   '/muffins': typeof MuffinsRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/order': typeof AuthenticatedOrderRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/feedback'
     | '/muffins'
+    | '/privacy'
     | '/reset-password'
     | '/admin'
     | '/order'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/feedback'
     | '/muffins'
+    | '/privacy'
     | '/reset-password'
     | '/admin'
     | '/order'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/feedback'
     | '/muffins'
+    | '/privacy'
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/order'
@@ -160,6 +172,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   FeedbackRoute: typeof FeedbackRoute
   MuffinsRoute: typeof MuffinsRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       path: '/muffins'
       fullPath: '/muffins'
       preLoaderRoute: typeof MuffinsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -270,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   FeedbackRoute: FeedbackRoute,
   MuffinsRoute: MuffinsRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
