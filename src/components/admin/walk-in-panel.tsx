@@ -41,6 +41,10 @@ export function WalkInPanel() {
     mutationFn: async () => {
       if (lines.length === 0) throw new Error("Add at least one muffin.");
       const trimmed = whatsapp.trim();
+      const res = residence.trim();
+      if (isStudent && res.length < 2) {
+        throw new Error("Please capture the student residence name.");
+      }
       // Optional field — validated only when the admin captured a number.
       if (trimmed && !isValidWhatsAppNumber(trimmed)) {
         throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
