@@ -1,13 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { PageShell } from "@/components/site-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MuffinImage } from "@/components/muffin-image";
+import { MuffinPreviewDialog } from "@/components/muffin-preview-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { currency } from "@/lib/format";
-import { useMuffins } from "@/lib/queries";
+import { useMuffins, type Muffin } from "@/lib/queries";
 import { useSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/muffins")({
