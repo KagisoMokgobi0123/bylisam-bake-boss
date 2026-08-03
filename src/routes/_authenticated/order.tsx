@@ -244,6 +244,20 @@ function OrderPage() {
                 })}
           </div>
 
+          <MuffinPreviewDialog
+            muffin={preview}
+            open={!!preview}
+            onOpenChange={(next) => !next && setPreview(null)}
+            actionLabel="Add to order"
+            initialQty={preview ? Math.max(1, cart[preview.id] ?? 1) : 1}
+            onConfirm={(muffin, qty) => {
+              setQty(muffin.id, qty, muffin.stock);
+              setPreview(null);
+              toast.success(`${qty} × ${muffin.name} added.`);
+            }}
+          />
+
+
           <Card className="h-fit rounded-3xl lg:sticky lg:top-24">
             <CardContent className="space-y-5 p-6">
               <h2 className="font-display text-xl text-primary">Your order</h2>
