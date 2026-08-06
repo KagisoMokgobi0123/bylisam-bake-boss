@@ -44,7 +44,8 @@ export function BusinessSettings() {
   const [address, setAddress] = useState("");
   const [businessPhone, setBusinessPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [hours, setHours] = useState("");
+  const [openTime, setOpenTime] = useState("08:00");
+  const [closeTime, setCloseTime] = useState("17:00");
   const [logo, setLogo] = useState<string>("");
   const [isOpen, setIsOpen] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -63,7 +64,9 @@ export function BusinessSettings() {
       setAddress(settings.business_address ?? "");
       setBusinessPhone(settings.business_phone ?? "");
       setEmail(settings.business_email ?? "");
-      setHours(settings.opening_hours ?? "");
+      const [o, c] = parseHours(settings.opening_hours ?? "");
+      setOpenTime(o);
+      setCloseTime(c);
       setLogo(settings.business_logo_url ?? "");
       setIsOpen(settings.is_open ?? true);
     }
@@ -96,7 +99,7 @@ export function BusinessSettings() {
           business_address: address.trim(),
           business_phone: businessPhone.trim(),
           business_email: email.trim(),
-          opening_hours: hours.trim(),
+          opening_hours: `${openTime} – ${closeTime}`,
           business_logo_url: logo,
           is_open: isOpen,
         })
