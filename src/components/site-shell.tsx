@@ -227,8 +227,10 @@ export function SiteHeader() {
               </div>
             </nav>
           </SheetContent>
-        </Sheet>
+          </Sheet>
+        </div>
       </div>
+
     </header>
   );
 }
