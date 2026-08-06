@@ -131,28 +131,33 @@ export function SiteHeader() {
               : null}
         </nav>
 
-        <div className="hidden items-center gap-2 xl:flex">
-          {!isAdmin ? <BusinessStatusPill /> : null}
-          {user ? (
-            <Button variant="secondary" size="sm" className="rounded-full" onClick={signOut}>
-              <LogOut className="mr-1.5 h-4 w-4" /> Sign out
-            </Button>
-          ) : (
-            <Button asChild size="sm" variant="secondary" className="rounded-full">
-              <Link to="/auth">
-                <LayoutDashboard className="mr-1.5 h-4 w-4" /> Sign in
-              </Link>
-            </Button>
-          )}
-        </div>
+        <div className="flex items-center gap-1">
+          <div className="hidden items-center gap-2 xl:flex">
+            {!isAdmin ? <BusinessStatusPill /> : null}
+          </div>
+          {isAdmin ? <AdminOrderBell /> : <CartButton />}
+          <div className="hidden items-center gap-2 xl:flex">
+            {user ? (
+              <Button variant="secondary" size="sm" className="rounded-full" onClick={signOut}>
+                <LogOut className="mr-1.5 h-4 w-4" /> Sign out
+              </Button>
+            ) : (
+              <Button asChild size="sm" variant="secondary" className="rounded-full">
+                <Link to="/auth">
+                  <LayoutDashboard className="mr-1.5 h-4 w-4" /> Sign in
+                </Link>
+              </Button>
+            )}
+          </div>
 
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="xl:hidden">
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </SheetTrigger>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild className="xl:hidden">
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+
           <SheetContent side="right" className="w-72 overflow-y-auto bg-card">
             <SheetTitle className="font-display text-lg text-primary">BYLISAM</SheetTitle>
             {!isAdmin ? (
