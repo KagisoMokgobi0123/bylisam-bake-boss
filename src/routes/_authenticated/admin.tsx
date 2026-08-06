@@ -430,13 +430,23 @@ function OrdersBoard() {
               <ul className="space-y-1 text-sm">
                 {order.order_items.map((item) => (
                   <li key={item.id} className="flex justify-between gap-3">
-                    <span>
+                    <span className="flex items-center gap-2">
                       {item.quantity} × {item.muffin_name}
+                      {Number(item.unit_price) === 0 ? (
+                        <Badge className="rounded-full border-accent bg-accent text-accent-foreground">
+                          Paid with points
+                        </Badge>
+                      ) : null}
                     </span>
-                    <span>{currency(Number(item.unit_price) * item.quantity)}</span>
+                    <span>
+                      {Number(item.unit_price) === 0
+                        ? "Free"
+                        : currency(Number(item.unit_price) * item.quantity)}
+                    </span>
                   </li>
                 ))}
               </ul>
+
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
                 <p className="font-display text-lg text-primary">{currency(order.total)}</p>
