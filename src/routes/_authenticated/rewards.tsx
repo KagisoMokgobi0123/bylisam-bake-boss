@@ -34,7 +34,7 @@ function RewardsPage() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
   const { data: settings } = useRewardSettings();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: rewards } = useQuery({
     queryKey: ["rewards-list", user?.id],
@@ -51,41 +51,23 @@ function RewardsPage() {
   });
 
   const points = profile?.points ?? 0;
-  const threshold = settings?.min_redemption_points ?? 10;
+  const threshold = Math.max(1, settings?.min_redemption_points ?? 10);
   const canRedeem = !!settings?.is_active && points >= threshold;
+  const freeMuffins = Math.floor(points / threshold);
 
-  const redeem = useMutation({
-    mutationFn: async () => {
-      if (!settings) throw new Error("Rewards are not configured yet.");
-      if (points < threshold) throw new Error("You don't have enough points yet.");
-      const expires = settings.expiry_days
-        ? new Date(Date.now() + settings.expiry_days * 86_400_000).toISOString()
-        : null;
-      const { error } = await supabase.from("rewards").insert({
-        user_id: user!.id,
-        reward_type: settings.reward_type,
-        reward_value: settings.reward_value,
-        points_spent: threshold,
-        expires_at: expires,
-      });
-      if (error) throw error;
-      const { error: pointsError } = await supabase
-        .from("profiles")
-        .update({ points: points - threshold })
-        .eq("id", user!.id);
-      if (pointsError) throw pointsError;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries();
-      toast.success("Reward unlocked! Use it on your next order. 🎁");
-    },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Could not redeem"),
-  });
+  /** Redeeming is done in the cart, so send the customer off to pick muffins. */
+  function startRedemption() {
+    toast.success(
+      `Pick your muffins — ${freeMuffins} of them will be free at checkout. 🎁`,
+    );
+    navigate({ to: "/muffins" });
+  }
 
   const active = (rewards ?? []).filter(
     (r) => r.status === "active" && (!r.expires_at || new Date(r.expires_at) > new Date()),
   );
   const history = (rewards ?? []).filter((r) => !active.includes(r));
+
 
   return (
     <PageShell>
