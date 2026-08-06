@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Gift, Loader2, Sparkles } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Gift, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+
 
 import { PageShell } from "@/components/site-shell";
 import { Badge } from "@/components/ui/badge";
