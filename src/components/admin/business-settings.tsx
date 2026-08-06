@@ -15,7 +15,21 @@ import { useProfile, useSession } from "@/lib/auth";
 import { uploadMuffinImage } from "@/lib/muffin-images";
 import { useAppSettings } from "@/lib/queries";
 
+/** Half-hourly time slots offered in the opening-hours dropdowns. */
+const TIME_OPTIONS: string[] = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, "0");
+  return `${h}:${i % 2 === 0 ? "00" : "30"}`;
+});
+
+/** Splits a stored "08:00 – 17:00" string back into its two dropdown values. */
+function parseHours(value: string): [string, string] {
+  const found = value.match(/\d{1,2}:\d{2}/g) ?? [];
+  const pad = (t?: string) => (t ? t.padStart(5, "0") : "");
+  return [pad(found[0]) || "08:00", pad(found[1]) || "17:00"];
+}
+
 /** Admin personal profile + business branding, hours and open/closed switch. */
+
 export function BusinessSettings() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
