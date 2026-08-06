@@ -69,7 +69,7 @@ function OrdersPage() {
               <CardContent className="p-10 text-center">
                 <p className="text-muted-foreground">You haven't placed an order yet.</p>
                 <Button asChild className="mt-5 rounded-full">
-                  <Link to="/order">Order some muffins</Link>
+                  <Link to="/muffins">Order some muffins</Link>
                 </Button>
               </CardContent>
             </Card>
