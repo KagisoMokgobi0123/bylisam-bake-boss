@@ -130,17 +130,9 @@ function MuffinsPage() {
           muffin={selected}
           open={!!selected}
           onOpenChange={(next) => !next && setSelected(null)}
-          actionLabel={user ? "Order now" : "Sign in to order"}
-          onConfirm={(muffin, qty) => {
-            setSelected(null);
-            navigate(
-              user
-                ? { to: "/order", search: { muffin: muffin.id, qty } }
-                : { to: "/auth" },
-            );
-          }}
+          actionLabel="Add to cart"
+          onConfirm={addToCart}
         />
-
 
         {!isLoading && (muffins ?? []).length === 0 ? (
           <p className="mt-10 text-center text-muted-foreground">
@@ -152,12 +144,19 @@ function MuffinsPage() {
           <h2 className="font-display text-2xl text-primary">Ready for a fresh batch?</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {user
-              ? "Head to the order page, pick your muffins and choose how you'd like to pay."
+              ? "Add your muffins to the cart, then check out from the cart icon in the top bar."
               : "Create a free account to order, track collection and start earning loyalty points."}
           </p>
-          <Button asChild size="lg" className="mt-5 rounded-full">
-            <Link to={user ? "/order" : "/auth"}>{user ? "Order now" : "Create an account"}</Link>
-          </Button>
+          {user ? (
+            <Button size="lg" className="mt-5 rounded-full" onClick={() => setCheckoutOpen(true)}>
+              Go to cart
+            </Button>
+          ) : (
+            <Button asChild size="lg" className="mt-5 rounded-full">
+              <Link to="/auth">Create an account</Link>
+            </Button>
+          )}
+
         </div>
       </div>
     </PageShell>
