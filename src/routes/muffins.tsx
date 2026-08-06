@@ -1,7 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { PageShell } from "@/components/site-shell";
+import { DeliveryNotice } from "@/components/delivery-notice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +11,7 @@ import { MuffinImage } from "@/components/muffin-image";
 import { MuffinPreviewDialog } from "@/components/muffin-preview-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { currency } from "@/lib/format";
+import { useCart } from "@/lib/cart";
 import { useMuffins, type Muffin } from "@/lib/queries";
 import { useSession } from "@/lib/auth";
 
@@ -34,17 +37,37 @@ export const Route = createFileRoute("/muffins")({
 function MuffinsPage() {
   const { data: muffins, isLoading } = useMuffins();
   const { user } = useSession();
-  const navigate = useNavigate();
+  const { add, setCheckoutOpen } = useCart();
   const [selected, setSelected] = useState<Muffin | null>(null);
+
+  function addToCart(muffin: Muffin, qty: number) {
+    add(
+      {
+        id: muffin.id,
+        name: muffin.name,
+        price: Number(muffin.price),
+        stock: muffin.stock,
+        image_url: muffin.image_url,
+      },
+      qty,
+    );
+    setSelected(null);
+    toast.success(`${qty} × ${muffin.name} added to your cart.`);
+  }
 
   return (
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 py-12">
         <h1 className="font-display text-3xl text-primary">Our muffins</h1>
         <p className="mt-2 max-w-prose text-muted-foreground">
-          Small batches, baked fresh each morning. Tap any muffin for a closer look — prices
-          include everything, and you pay with cash or EFT when you collect.
+          Small batches, baked fresh each morning. Tap any muffin for a closer look, add it to your
+          cart and check out from the cart icon at the top.
         </p>
+
+        <div className="mt-6 max-w-xl">
+          <DeliveryNotice />
+        </div>
+
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading
