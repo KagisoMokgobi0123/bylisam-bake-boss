@@ -106,12 +106,17 @@ function RewardsPage() {
             <Button
               className="mt-6 rounded-full"
               size="lg"
-              disabled={!canRedeem || redeem.isPending}
-              onClick={() => redeem.mutate()}
+              disabled={!canRedeem}
+              onClick={startRedemption}
             >
-              {redeem.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Claim reward
+              Redeem points
             </Button>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {canRedeem
+                ? "Pick your muffins, add them to the cart and switch on \"Redeem points\" at checkout."
+                : "Keep ordering to reach your next free muffin."}
+            </p>
+
           </CardContent>
         </Card>
 
