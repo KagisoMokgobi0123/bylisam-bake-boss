@@ -17,7 +17,6 @@ import { Route as MuffinsRouteImport } from './routes/muffins'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedOrderRouteImport } from './routes/_authenticated/order'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
@@ -61,11 +60,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedOrderRoute = AuthenticatedOrderRouteImport.update({
-  id: '/order',
-  path: '/order',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -90,7 +84,6 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/order': typeof AuthenticatedOrderRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/rewards': typeof AuthenticatedRewardsRoute
@@ -103,7 +96,6 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/order': typeof AuthenticatedOrderRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/rewards': typeof AuthenticatedRewardsRoute
@@ -118,7 +110,6 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/order': typeof AuthenticatedOrderRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
@@ -133,7 +124,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/admin'
-    | '/order'
     | '/orders'
     | '/profile'
     | '/rewards'
@@ -146,7 +136,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/admin'
-    | '/order'
     | '/orders'
     | '/profile'
     | '/rewards'
@@ -160,7 +149,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/_authenticated/admin'
-    | '/_authenticated/order'
     | '/_authenticated/orders'
     | '/_authenticated/profile'
     | '/_authenticated/rewards'
@@ -234,13 +222,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/order': {
-      id: '/_authenticated/order'
-      path: '/order'
-      fullPath: '/order'
-      preLoaderRoute: typeof AuthenticatedOrderRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/orders': {
       id: '/_authenticated/orders'
       path: '/orders'
@@ -267,7 +248,6 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedOrderRoute: typeof AuthenticatedOrderRoute
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
@@ -275,7 +255,6 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedOrderRoute: AuthenticatedOrderRoute,
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,

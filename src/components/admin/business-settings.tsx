@@ -15,7 +15,21 @@ import { useProfile, useSession } from "@/lib/auth";
 import { uploadMuffinImage } from "@/lib/muffin-images";
 import { useAppSettings } from "@/lib/queries";
 
+/** Half-hourly time slots offered in the opening-hours dropdowns. */
+const TIME_OPTIONS: string[] = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, "0");
+  return `${h}:${i % 2 === 0 ? "00" : "30"}`;
+});
+
+/** Splits a stored "08:00 – 17:00" string back into its two dropdown values. */
+function parseHours(value: string): [string, string] {
+  const found = value.match(/\d{1,2}:\d{2}/g) ?? [];
+  const pad = (t?: string) => (t ? t.padStart(5, "0") : "");
+  return [pad(found[0]) || "08:00", pad(found[1]) || "17:00"];
+}
+
 /** Admin personal profile + business branding, hours and open/closed switch. */
+
 export function BusinessSettings() {
   const { user } = useSession();
   const { data: profile } = useProfile(user?.id);
@@ -30,7 +44,8 @@ export function BusinessSettings() {
   const [address, setAddress] = useState("");
   const [businessPhone, setBusinessPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [hours, setHours] = useState("");
+  const [openTime, setOpenTime] = useState("08:00");
+  const [closeTime, setCloseTime] = useState("17:00");
   const [logo, setLogo] = useState<string>("");
   const [isOpen, setIsOpen] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -49,7 +64,9 @@ export function BusinessSettings() {
       setAddress(settings.business_address ?? "");
       setBusinessPhone(settings.business_phone ?? "");
       setEmail(settings.business_email ?? "");
-      setHours(settings.opening_hours ?? "");
+      const [o, c] = parseHours(settings.opening_hours ?? "");
+      setOpenTime(o);
+      setCloseTime(c);
       setLogo(settings.business_logo_url ?? "");
       setIsOpen(settings.is_open ?? true);
     }
@@ -82,7 +99,7 @@ export function BusinessSettings() {
           business_address: address.trim(),
           business_phone: businessPhone.trim(),
           business_email: email.trim(),
-          opening_hours: hours.trim(),
+          opening_hours: `${openTime} – ${closeTime}`,
           business_logo_url: logo,
           is_open: isOpen,
         })
@@ -179,15 +196,44 @@ export function BusinessSettings() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="bs-hours">Opening hours</Label>
-            <Input
-              id="bs-hours"
-              maxLength={120}
-              placeholder="Mon–Fri 08:00–17:00"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-            />
+            <Label>Opening hours</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="bs-open-time" className="text-xs text-muted-foreground">
+                  Opens
+                </Label>
+                <select
+                  id="bs-open-time"
+                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                  value={openTime}
+                  onChange={(e) => setOpenTime(e.target.value)}
+                >
+                  {TIME_OPTIONS.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="bs-close-time" className="text-xs text-muted-foreground">
+                  Closes
+                </Label>
+                <select
+                  id="bs-close-time"
+                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                  value={closeTime}
+                  onChange={(e) => setCloseTime(e.target.value)}
+                >
+                  {TIME_OPTIONS.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Shown to customers as “Open {openTime} – {closeTime}”.
+            </p>
           </div>
+
 
           <div className="flex items-center justify-between rounded-2xl surface-cream p-3">
             <div>

@@ -9,6 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSession } from "@/lib/auth";
 import { useAppSettings } from "@/lib/queries";
 import { useMuffinImageUrl } from "@/lib/muffin-images";
+import { CartProvider } from "@/lib/cart";
+import { CartButton } from "@/components/cart-button";
+import { CheckoutDialog } from "@/components/checkout-dialog";
+import { AdminOrderBell } from "@/components/admin/order-bell";
 
 const publicLinks = [
   { to: "/", label: "Home" },
@@ -17,11 +21,11 @@ const publicLinks = [
 ] as const;
 
 const customerLinks = [
-  { to: "/order", label: "Order" },
   { to: "/orders", label: "My orders" },
   { to: "/rewards", label: "Rewards" },
   { to: "/profile", label: "Profile" },
 ] as const;
+
 
 const adminTabs = [
   { tab: "overview", label: "Overview" },
@@ -127,28 +131,33 @@ export function SiteHeader() {
               : null}
         </nav>
 
-        <div className="hidden items-center gap-2 xl:flex">
-          {!isAdmin ? <BusinessStatusPill /> : null}
-          {user ? (
-            <Button variant="secondary" size="sm" className="rounded-full" onClick={signOut}>
-              <LogOut className="mr-1.5 h-4 w-4" /> Sign out
-            </Button>
-          ) : (
-            <Button asChild size="sm" variant="secondary" className="rounded-full">
-              <Link to="/auth">
-                <LayoutDashboard className="mr-1.5 h-4 w-4" /> Sign in
-              </Link>
-            </Button>
-          )}
-        </div>
+        <div className="flex items-center gap-1">
+          <div className="hidden items-center gap-2 xl:flex">
+            {!isAdmin ? <BusinessStatusPill /> : null}
+          </div>
+          {isAdmin ? <AdminOrderBell /> : <CartButton />}
+          <div className="hidden items-center gap-2 xl:flex">
+            {user ? (
+              <Button variant="secondary" size="sm" className="rounded-full" onClick={signOut}>
+                <LogOut className="mr-1.5 h-4 w-4" /> Sign out
+              </Button>
+            ) : (
+              <Button asChild size="sm" variant="secondary" className="rounded-full">
+                <Link to="/auth">
+                  <LayoutDashboard className="mr-1.5 h-4 w-4" /> Sign in
+                </Link>
+              </Button>
+            )}
+          </div>
 
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="xl:hidden">
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </SheetTrigger>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild className="xl:hidden">
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+
           <SheetContent side="right" className="w-72 overflow-y-auto bg-card">
             <SheetTitle className="font-display text-lg text-primary">BYLISAM</SheetTitle>
             {!isAdmin ? (
@@ -218,8 +227,10 @@ export function SiteHeader() {
               </div>
             </nav>
           </SheetContent>
-        </Sheet>
+          </Sheet>
+        </div>
       </div>
+
     </header>
   );
 }
@@ -289,10 +300,14 @@ export function SiteFooter() {
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1">{children}</main>
-      <SiteFooter />
-    </div>
+    <CartProvider>
+      <div className="flex min-h-screen flex-col bg-background">
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
+        <CheckoutDialog />
+      </div>
+    </CartProvider>
   );
 }
+

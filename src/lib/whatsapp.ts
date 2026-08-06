@@ -105,34 +105,48 @@ export function isValidWhatsAppNumber(value: string) {
 
 /** Absolute link to the public feedback page, built from the running app's URL. */
 export function feedbackLink() {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const origin =
+    typeof window !== "undefined" ? window.location.origin.replace(/\/+$/, "") : "";
   return `${origin}/feedback`;
 }
 
 export const FEEDBACK_INVITE =
   "We'd love to hear your feedback! Please leave us a review here:";
 
-/** Appends the friendly feedback invitation + link to any customer WhatsApp message. */
+/**
+ * Appends the friendly feedback invitation + link to any customer WhatsApp message.
+ * The URL sits alone on its own line so WhatsApp never swallows a trailing
+ * character into the link (which used to send people to a 404).
+ */
 export function withFeedbackInvite(message: string, link = feedbackLink()) {
-  return `${message}\n\n${FEEDBACK_INVITE} ${link}`;
+  return `${message}\n\n${FEEDBACK_INVITE}\n${link}\n`;
 }
 
-/** Builds a wa.me click-to-chat link with the receipt and thank-you message pre-filled. */
+/**
+ * Builds a click-to-chat link. api.whatsapp.com/send opens the standard
+ * WhatsApp app by default; WhatsApp Business only takes over when that number
+ * is registered to the Business app on the device.
+ */
+function chatLink(phone: string, text: string) {
+  return `https://api.whatsapp.com/send?phone=${normalisePhone(phone)}&text=${encodeURIComponent(
+    text,
+  )}&type=phone_number&app_absent=0`;
+}
+
+/** Builds a click-to-chat link with the receipt and thank-you message pre-filled. */
 export function buildWhatsAppLink(
   phone: string,
   receipt: string,
   thankYouMessage: string,
 ) {
-  const text = withFeedbackInvite(`${receipt}\n\n${thankYouMessage}`);
-  return `https://wa.me/${normalisePhone(phone)}?text=${encodeURIComponent(text)}`;
+  return chatLink(phone, withFeedbackInvite(`${receipt}\n\n${thankYouMessage}`));
 }
 
 /** Click-to-chat link for a short status / collection update message. */
 export function buildWhatsAppMessageLink(phone: string, message: string) {
-  return `https://wa.me/${normalisePhone(phone)}?text=${encodeURIComponent(
-    withFeedbackInvite(message),
-  )}`;
+  return chatLink(phone, withFeedbackInvite(message));
 }
+
 
 export function statusUpdateMessage(
   reference: string,

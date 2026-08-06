@@ -62,7 +62,7 @@ function Home() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full">
-              <Link to="/order">Order now</Link>
+              <Link to="/muffins">Order now</Link>
             </Button>
             <Button asChild size="lg" variant="ghost" className="rounded-full">
               <Link to="/feedback">Leave feedback</Link>
