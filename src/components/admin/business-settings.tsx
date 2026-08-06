@@ -179,15 +179,44 @@ export function BusinessSettings() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="bs-hours">Opening hours</Label>
-            <Input
-              id="bs-hours"
-              maxLength={120}
-              placeholder="Mon–Fri 08:00–17:00"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-            />
+            <Label>Opening hours</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="bs-open-time" className="text-xs text-muted-foreground">
+                  Opens
+                </Label>
+                <select
+                  id="bs-open-time"
+                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                  value={openTime}
+                  onChange={(e) => setOpenTime(e.target.value)}
+                >
+                  {TIME_OPTIONS.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="bs-close-time" className="text-xs text-muted-foreground">
+                  Closes
+                </Label>
+                <select
+                  id="bs-close-time"
+                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                  value={closeTime}
+                  onChange={(e) => setCloseTime(e.target.value)}
+                >
+                  {TIME_OPTIONS.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Shown to customers as “Open {openTime} – {closeTime}”.
+            </p>
           </div>
+
 
           <div className="flex items-center justify-between rounded-2xl surface-cream p-3">
             <div>
