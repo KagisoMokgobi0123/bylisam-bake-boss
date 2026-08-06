@@ -9,6 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSession } from "@/lib/auth";
 import { useAppSettings } from "@/lib/queries";
 import { useMuffinImageUrl } from "@/lib/muffin-images";
+import { CartProvider, useCart } from "@/lib/cart";
+import { CartButton } from "@/components/cart-button";
+import { CheckoutDialog } from "@/components/checkout-dialog";
+import { AdminOrderBell } from "@/components/admin/order-bell";
 
 const publicLinks = [
   { to: "/", label: "Home" },
@@ -17,11 +21,11 @@ const publicLinks = [
 ] as const;
 
 const customerLinks = [
-  { to: "/order", label: "Order" },
   { to: "/orders", label: "My orders" },
   { to: "/rewards", label: "Rewards" },
   { to: "/profile", label: "Profile" },
 ] as const;
+
 
 const adminTabs = [
   { tab: "overview", label: "Overview" },
