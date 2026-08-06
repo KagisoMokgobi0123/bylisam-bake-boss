@@ -132,11 +132,11 @@ function RootComponent() {
   }, [router, queryClient]);
 
   return (
-<QueryClientProvider client={queryClient}>
-
-    <Outlet />
-    <Toaster position="top-center" richColors />
-
-</QueryClientProvider> 
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <Outlet />
+        <Toaster position="top-center" richColors />
+      </CartProvider>
+    </QueryClientProvider>
   );
 }
