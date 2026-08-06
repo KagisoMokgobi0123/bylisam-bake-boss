@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSession } from "@/lib/auth";
 import { useAppSettings } from "@/lib/queries";
 import { useMuffinImageUrl } from "@/lib/muffin-images";
-import { CartProvider, useCart } from "@/lib/cart";
+import { CartProvider } from "@/lib/cart";
 import { CartButton } from "@/components/cart-button";
 import { CheckoutDialog } from "@/components/checkout-dialog";
 import { AdminOrderBell } from "@/components/admin/order-bell";
