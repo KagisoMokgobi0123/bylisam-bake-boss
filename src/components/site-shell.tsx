@@ -13,6 +13,7 @@ import { CartProvider } from "@/lib/cart";
 import { CartButton } from "@/components/cart-button";
 import { CheckoutDialog } from "@/components/checkout-dialog";
 import { AdminOrderBell } from "@/components/admin/order-bell";
+import { CustomerNotificationBell } from "@/components/customer-bell";
 
 const publicLinks = [
   { to: "/", label: "Home" },
