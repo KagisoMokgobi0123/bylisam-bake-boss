@@ -36,6 +36,7 @@ function OrdersPage() {
   const { user } = useSession();
   const { data: settings } = useAppSettings();
   const [receiptId, setReceiptId] = useState<string | null>(null);
+  useOrdersRealtime(["my-orders", "my-order-updates"]);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
