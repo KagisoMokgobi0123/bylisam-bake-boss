@@ -18,7 +18,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfile, useSession } from "@/lib/auth";
-import { currency, formatDate, type OrderStatus } from "@/lib/format";
+import {
+  currency,
+  formatDate,
+  NEXT_STATUS,
+  NEXT_STATUS_ACTION,
+  STATUS_LABELS,
+  type OrderStatus,
+} from "@/lib/format";
 import { useAppSettings, useMuffins, useRewardSettings, type Muffin } from "@/lib/queries";
 import { buildReceiptText, buildWhatsAppLink, DEFAULT_THANK_YOU } from "@/lib/whatsapp";
 import { ProfitCalculator } from "@/components/admin/profit-calculator";
