@@ -456,10 +456,15 @@ function OrdersBoard() {
                     <Button
                       size="sm"
                       className="rounded-full"
-                      disabled={complete.isPending}
-                      onClick={() => complete.mutate(order)}
+                      disabled={complete.isPending || advance.isPending}
+                      onClick={() =>
+                        order.status === "ready"
+                          ? complete.mutate(order)
+                          : advance.mutate(order)
+                      }
                     >
-                      <CheckCircle2 className="mr-1.5 h-4 w-4" /> Order complete
+                      <CheckCircle2 className="mr-1.5 h-4 w-4" />{" "}
+                      {NEXT_STATUS_ACTION[order.status] ?? "Order completed"}
                     </Button>
                   ) : null}
                   {order.status === "collected" ? (
