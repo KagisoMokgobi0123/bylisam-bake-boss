@@ -372,6 +372,22 @@ function OrdersBoard() {
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update"),
   });
 
+  /** Moves the order one stage forward: pending → approved → ready. */
+  const advance = useMutation({
+    mutationFn: async (order: OrderRow) => {
+      const next = NEXT_STATUS[order.status];
+      if (!next) throw new Error("This order is already finished.");
+      const { error } = await supabase.from("orders").update({ status: next }).eq("id", order.id);
+      if (error) throw error;
+      return next;
+    },
+    onSuccess: (next) => {
+      queryClient.invalidateQueries();
+      toast.success(`Order moved to ${STATUS_LABELS[next].toLowerCase()}.`);
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update"),
+  });
+
   const cancel = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id);
