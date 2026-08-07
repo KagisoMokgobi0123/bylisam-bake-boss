@@ -38,6 +38,7 @@ import { MuffinImage } from "@/components/muffin-image";
 import { uploadMuffinImage } from "@/lib/muffin-images";
 import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
 import { useProductionCosts, useProductionSettings } from "@/lib/production";
+import { useOrdersRealtime } from "@/lib/realtime";
 
 const adminSearchSchema = z.object({
   tab: z
