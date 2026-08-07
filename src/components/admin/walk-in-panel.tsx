@@ -18,6 +18,9 @@ export function WalkInPanel() {
   const { data: muffins, isLoading } = useMuffins();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useSession();
+  const { data: adminProfile } = useProfile(user?.id);
+  const cashierName = adminProfile?.full_name || "BYLISAM staff";
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [name, setName] = useState("");
