@@ -49,6 +49,7 @@ export function WalkInPanel() {
       if (trimmed && !isValidWhatsAppNumber(trimmed)) {
         throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
       }
+      const now = new Date().toISOString();
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
@@ -63,6 +64,11 @@ export function WalkInPanel() {
           subtotal: total,
           discount: 0,
           total,
+          // Walk-ins are handed over immediately, so they complete on creation.
+          status: "collected",
+          collected_at: now,
+          cashier_name: cashierName,
+          amount_paid: total,
         })
         .select("id, reference")
         .single();
@@ -78,6 +84,14 @@ export function WalkInPanel() {
         })),
       );
       if (itemsError) throw itemsError;
+
+      // Stock leaves the shelf right away for walk-ins.
+      for (const line of lines) {
+        await supabase
+          .from("muffins")
+          .update({ stock: Math.max(0, line.muffin.stock - line.qty) })
+          .eq("id", line.muffin.id);
+      }
       return order.reference;
     },
     onSuccess: (reference) => {
