@@ -1,55 +1,40 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useOrdersRealtime } from "@/lib/realtime";
 
-const SEEN_KEY = "bylisam-orders-seen-at";
-
-/** Bell in the admin navbar showing how many orders have arrived since the last look. */
+/**
+ * Bell in the admin navbar. Counts every customer order that still needs
+ * attention — the badge only clears once an order is completed or cancelled.
+ */
 export function AdminOrderBell() {
   const navigate = useNavigate();
-  const [seenAt, setSeenAt] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
+  useOrdersRealtime(["admin-active-orders", "admin-orders"]);
 
-  useEffect(() => {
-    setSeenAt(window.localStorage.getItem(SEEN_KEY));
-    setHydrated(true);
-  }, []);
-
-  const { data: orders } = useQuery({
-    queryKey: ["admin-new-orders"],
+  const { data: active } = useQuery({
+    queryKey: ["admin-active-orders"],
     refetchInterval: 30_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from("orders")
-        .select("id, created_at, status")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(100);
+        .select("id", { count: "exact", head: true })
+        .eq("is_walk_in", false)
+        .not("status", "in", "(collected,cancelled)");
       if (error) throw error;
-      return data ?? [];
+      return count ?? 0;
     },
   });
 
-  const unread = hydrated
-    ? (orders ?? []).filter((o) => !seenAt || new Date(o.created_at) > new Date(seenAt)).length
-    : 0;
-
-  function openOrders() {
-    const now = new Date().toISOString();
-    window.localStorage.setItem(SEEN_KEY, now);
-    setSeenAt(now);
-    navigate({ to: "/admin", search: { tab: "orders" } });
-  }
+  const unread = active ?? 0;
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={openOrders}
+      onClick={() => navigate({ to: "/admin", search: { tab: "orders" } })}
       className="relative rounded-full text-primary-foreground hover:bg-primary-foreground/10"
     >
       <Bell className="h-5 w-5" />
@@ -59,7 +44,7 @@ export function AdminOrderBell() {
         </span>
       ) : null}
       <span className="sr-only">
-        {unread > 0 ? `${unread} new orders` : "Orders"}
+        {unread > 0 ? `${unread} active customer orders` : "Orders"}
       </span>
     </Button>
   );
