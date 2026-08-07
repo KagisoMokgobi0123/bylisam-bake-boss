@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth";
 import { currency, formatDate, STATUS_LABELS, type OrderStatus } from "@/lib/format";
 import { useAppSettings } from "@/lib/queries";
+import { useOrdersRealtime } from "@/lib/realtime";
 
 export const Route = createFileRoute("/_authenticated/orders")({
   head: () => ({
