@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { currency } from "@/lib/format";
+import { useProfile, useSession } from "@/lib/auth";
 import { useMuffins } from "@/lib/queries";
 import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 
@@ -18,6 +19,9 @@ export function WalkInPanel() {
   const { data: muffins, isLoading } = useMuffins();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useSession();
+  const { data: adminProfile } = useProfile(user?.id);
+  const cashierName = adminProfile?.full_name || "BYLISAM staff";
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [name, setName] = useState("");
@@ -49,6 +53,7 @@ export function WalkInPanel() {
       if (trimmed && !isValidWhatsAppNumber(trimmed)) {
         throw new Error("That WhatsApp number doesn't look right. Leave it blank to skip.");
       }
+      const now = new Date().toISOString();
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
@@ -63,6 +68,11 @@ export function WalkInPanel() {
           subtotal: total,
           discount: 0,
           total,
+          // Walk-ins are handed over immediately, so they complete on creation.
+          status: "collected",
+          collected_at: now,
+          cashier_name: cashierName,
+          amount_paid: total,
         })
         .select("id, reference")
         .single();
@@ -78,6 +88,14 @@ export function WalkInPanel() {
         })),
       );
       if (itemsError) throw itemsError;
+
+      // Stock leaves the shelf right away for walk-ins.
+      for (const line of lines) {
+        await supabase
+          .from("muffins")
+          .update({ stock: Math.max(0, line.muffin.stock - line.qty) })
+          .eq("id", line.muffin.id);
+      }
       return order.reference;
     },
     onSuccess: (reference) => {
@@ -86,7 +104,7 @@ export function WalkInPanel() {
       setName("");
       setWhatsapp("");
       setResidence("");
-      toast.success(`Walk-in order ${reference} created.`);
+      toast.success(`Walk-in order ${reference} created and completed.`);
       navigate({ to: "/admin", search: { tab: "orders" } });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not create"),

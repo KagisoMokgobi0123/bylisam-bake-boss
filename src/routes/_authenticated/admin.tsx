@@ -18,7 +18,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfile, useSession } from "@/lib/auth";
-import { currency, formatDate, type OrderStatus } from "@/lib/format";
+import {
+  currency,
+  formatDate,
+  NEXT_STATUS,
+  NEXT_STATUS_ACTION,
+  STATUS_LABELS,
+  type OrderStatus,
+} from "@/lib/format";
 import { useAppSettings, useMuffins, useRewardSettings, type Muffin } from "@/lib/queries";
 import { buildReceiptText, buildWhatsAppLink, DEFAULT_THANK_YOU } from "@/lib/whatsapp";
 import { ProfitCalculator } from "@/components/admin/profit-calculator";
@@ -31,6 +38,7 @@ import { MuffinImage } from "@/components/muffin-image";
 import { uploadMuffinImage } from "@/lib/muffin-images";
 import { costPerUnit, percent, profitMargin, totalIngredientCost } from "@/lib/profit";
 import { useProductionCosts, useProductionSettings } from "@/lib/production";
+import { useOrdersRealtime } from "@/lib/realtime";
 
 const adminSearchSchema = z.object({
   tab: z
@@ -156,6 +164,7 @@ function AdminPage() {
 }
 
 function useAdminOrders() {
+  useOrdersRealtime(["admin-orders", "admin-active-orders"]);
   return useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
@@ -372,6 +381,22 @@ function OrdersBoard() {
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update"),
   });
 
+  /** Moves the order one stage forward: pending → approved → ready. */
+  const advance = useMutation({
+    mutationFn: async (order: OrderRow) => {
+      const next = NEXT_STATUS[order.status];
+      if (!next) throw new Error("This order is already finished.");
+      const { error } = await supabase.from("orders").update({ status: next }).eq("id", order.id);
+      if (error) throw error;
+      return next;
+    },
+    onSuccess: (next) => {
+      queryClient.invalidateQueries();
+      toast.success(`Order moved to ${STATUS_LABELS[next].toLowerCase()}.`);
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update"),
+  });
+
   const cancel = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id);
@@ -456,10 +481,15 @@ function OrdersBoard() {
                     <Button
                       size="sm"
                       className="rounded-full"
-                      disabled={complete.isPending}
-                      onClick={() => complete.mutate(order)}
+                      disabled={complete.isPending || advance.isPending}
+                      onClick={() =>
+                        order.status === "ready"
+                          ? complete.mutate(order)
+                          : advance.mutate(order)
+                      }
                     >
-                      <CheckCircle2 className="mr-1.5 h-4 w-4" /> Order complete
+                      <CheckCircle2 className="mr-1.5 h-4 w-4" />{" "}
+                      {NEXT_STATUS_ACTION[order.status] ?? "Order completed"}
                     </Button>
                   ) : null}
                   {order.status === "collected" ? (

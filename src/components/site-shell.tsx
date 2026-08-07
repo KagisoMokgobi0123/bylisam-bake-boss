@@ -13,6 +13,7 @@ import { CartProvider } from "@/lib/cart";
 import { CartButton } from "@/components/cart-button";
 import { CheckoutDialog } from "@/components/checkout-dialog";
 import { AdminOrderBell } from "@/components/admin/order-bell";
+import { CustomerNotificationBell } from "@/components/customer-bell";
 
 const publicLinks = [
   { to: "/", label: "Home" },
@@ -135,7 +136,14 @@ export function SiteHeader() {
           <div className="hidden items-center gap-2 xl:flex">
             {!isAdmin ? <BusinessStatusPill /> : null}
           </div>
-          {isAdmin ? <AdminOrderBell /> : <CartButton />}
+          {isAdmin ? (
+            <AdminOrderBell />
+          ) : (
+            <>
+              <CustomerNotificationBell />
+              <CartButton />
+            </>
+          )}
           <div className="hidden items-center gap-2 xl:flex">
             {user ? (
               <Button variant="secondary" size="sm" className="rounded-full" onClick={signOut}>

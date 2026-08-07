@@ -6,11 +6,18 @@ export function currency(value: number | string | null | undefined) {
 export type OrderStatus = "pending" | "approved" | "ready" | "collected" | "cancelled";
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pending",
+  pending: "Order received",
   approved: "Approved",
   ready: "Ready for collection",
-  collected: "Collected",
+  collected: "Order completed",
   cancelled: "Cancelled",
+};
+
+/** Label for the admin's single progression button at each stage. */
+export const NEXT_STATUS_ACTION: Partial<Record<OrderStatus, string>> = {
+  pending: "Approve",
+  approved: "Ready for collection",
+  ready: "Order completed",
 };
 
 export const STATUS_CLASSES: Record<OrderStatus, string> = {
