@@ -104,7 +104,7 @@ export function WalkInPanel() {
       setName("");
       setWhatsapp("");
       setResidence("");
-      toast.success(`Walk-in order ${reference} created.`);
+      toast.success(`Walk-in order ${reference} created and completed.`);
       navigate({ to: "/admin", search: { tab: "orders" } });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not create"),
