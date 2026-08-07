@@ -163,6 +163,7 @@ function AdminPage() {
 }
 
 function useAdminOrders() {
+  useOrdersRealtime(["admin-orders", "admin-active-orders"]);
   return useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
