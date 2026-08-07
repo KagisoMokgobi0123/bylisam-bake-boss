@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { currency } from "@/lib/format";
+import { useProfile, useSession } from "@/lib/auth";
 import { useMuffins } from "@/lib/queries";
 import { isValidWhatsAppNumber } from "@/lib/whatsapp";
 
